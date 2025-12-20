@@ -1,0 +1,6 @@
+eonc
+*.ll
+*.out
+*.o
+*.a
+src/*.o
