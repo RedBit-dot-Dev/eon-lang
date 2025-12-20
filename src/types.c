@@ -24,6 +24,7 @@ int tokenToDataType(const Token* token) {
 
             if (token->value[0] == 'i') {
                 if (!strcmp(token->value, "i16")) return TYPE_i16;
+                if (!strcmp(token->value, "int")) return TYPE_i32;
                 if (!strcmp(token->value, "i32")) return TYPE_i32;
                 if (!strcmp(token->value, "i64")) return TYPE_i64;
             }
