@@ -1,3 +1,11 @@
+## 0.1.2 - December 21, 2025
+### Changed:
+- `char` is now a recognized data type mapped to `i8`
+- `float` and `f32` are now recognized data types mapped to `float`
+- `double` and `f64` are now recognized data types mapped to `double`
+- `dataTypeToString()` now returns unsigned integers as "i(n_bits)", following the LLVM IR standards
+- AST struct now has a union of various data types as value of literals
+
 ## 0.1.1 - December 20, 2025
 ### Added:
 - CHANGELOG.md

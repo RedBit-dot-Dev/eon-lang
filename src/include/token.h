@@ -22,15 +22,15 @@ enum _token_types{
     TOKEN_GREATERTHAN,
     TOKEN_DATATYPE,
     // KEYWORDS
-    TOKEN_FN, //x
-    TOKEN_RETURN, //x
-    TOKEN_FOR, //x
-    TOKEN_IF, //x
-    TOKEN_WHILE, //x
-    TOKEN_BREAK, //x
+    TOKEN_FN,
+    TOKEN_RETURN,
+    TOKEN_FOR,
+    TOKEN_IF,
+    TOKEN_WHILE,
+    TOKEN_BREAK,
     TOKEN_CONTINUE,
-    TOKEN_CONST, //x
-    TOKEN_ELSE, //x
+    TOKEN_CONST,
+    TOKEN_ELSE,
     // For control
     TOKEN_EOF,
     TOKEN_MAX,

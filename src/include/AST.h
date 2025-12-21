@@ -25,13 +25,20 @@ enum _ast_types{
 };
 
 typedef struct _ast {
-    enum _ast_types node_type;
-    enum _data_types data_type;
-    Vector* children;
     char* name;
-    int int_value;
+
+    union {
+        char char_v;
+        int int_v;
+        float float_v;
+        char* string_v;
+    } literal_value;
+
+    Vector* children;
     struct _ast* value;
     struct _ast* args_params;
+    enum _ast_types node_type;
+    enum _data_types data_type;
 } AST;
 
 AST* createAST(int type);

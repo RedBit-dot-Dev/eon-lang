@@ -70,7 +70,7 @@ AST* parseIntLiteral(Parser* parser) {
 
     AST* ast = createAST(AST_INT_LITERAL);
     ast->data_type = TYPE_i32; //! PLACEHOLDER?
-    ast->int_value = int_value;
+    ast->literal_value.int_v = int_value;
     parserEat(parser, TOKEN_SEMI);
 
     return ast;
@@ -233,9 +233,9 @@ AST* parseReturn(Parser* parser) {
 }
 
 AST* parseExpression(Parser* parser) {
-    
+
     assert(TOKEN_MAX == 29 && "parseExpression() must handle all token cases");
-    
+
     switch (parser->token->type) {
 
         case TOKEN_ID               : return parseId(parser);
@@ -248,7 +248,7 @@ AST* parseExpression(Parser* parser) {
         printf("[Parser]: Unexpected token: '%s' at %d:%d\n", parser->token->value, parser->token->line, parser->token->column);
         exit(1);
     }
-    
+
 }
 
 AST* parseProgram(Parser* parser) {

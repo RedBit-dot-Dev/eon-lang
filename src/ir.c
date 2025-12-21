@@ -45,7 +45,7 @@ void writeExpression(FILE* file, AST* ast, int num_tabs) {
             fprintf(file, "ret %s", dataTypeToString(ast->value->data_type));
 
             if (ast->value->node_type != AST_NOOP) {
-                fprintf(file, " %d", ast->value->int_value); //TODO: FIXME Assuming is int 
+                fprintf(file, " %d", ast->value->literal_value.int_v); //TODO: FIXME Assuming is int 
             }
 
             break;
@@ -58,7 +58,7 @@ void writeExpression(FILE* file, AST* ast, int num_tabs) {
 
 void writeProgram(FILE* file, AST* root) {
 
-    fprintf(file, "target triple = \"x86_64-pc-linux-gnu\"\n\n");
+    fprintf(file, "target triple = \"x86_64-pc-linux-gnu\"\n\n"); // TODO: make this architecture agnostic
 
     AST** children = (AST**) root->children->items;
 

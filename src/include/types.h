@@ -13,8 +13,8 @@ enum _data_types {
     TYPE_u32,
     TYPE_u64,
     TYPE_u128,
-    TYPE_f32, // defined float
-    TYPE_f64,
+    TYPE_FLOAT, // f32
+    TYPE_DOUBLE, // f64
     TYPE_VOID,
     TYPE_MAX,
 };
