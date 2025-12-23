@@ -1,14 +1,17 @@
 #include "include/lexer.h"
 #include "include/macros.h"
 #include "include/types.h"
+#include "include/arena.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
+extern Arena* arena_main;
+
 Lexer* createLexer(char* src) {
 
-    Lexer* lexer = (Lexer*) malloc(sizeof(Lexer));
+    Lexer* lexer = (Lexer*) arenaPush(arena_main, sizeof(lexer), true);
     assert(lexer && "Could not allocate memory for lexer");
 
     lexer->src = src;
@@ -60,10 +63,9 @@ Token* lexerAdvanceWith(Lexer* lexer, Token* token, int offset) {
 
 Token* lexerAdvanceCurrent(Lexer* lexer, int type) {
 
-    char* value = malloc(2);
+    char* value = arenaPushString(arena_main, 2, " ");
 
     value[0] = lexer->c;
-    value[1] = '\0';
 
     Token* token = createToken(value, type, 1, lexer->line, lexer->column);
     lexerAdvance(lexer);
@@ -74,7 +76,23 @@ Token* lexerAdvanceCurrent(Lexer* lexer, int type) {
 // TODO: make this better
 Token* lexerParseId(Lexer* lexer) {
 
-    char* value = calloc(1, 1);
+    int beg = lexer->i;
+
+    while (isalnum(lexer->c)) {
+        lexerAdvance(lexer);
+    }
+
+    int end = lexer->i;
+
+    int length_excluding_null = end - beg;
+
+    char* value = (char*) arenaPush(arena_main, length_excluding_null + 1, false);
+
+    memcpy(value, lexer->src + beg, length_excluding_null);
+
+    value[length_excluding_null] = '\0';
+
+    /* char* value = calloc(1, 1);
     int length = 0;
 
     while (isalnum(lexer->c)) {
@@ -82,15 +100,31 @@ Token* lexerParseId(Lexer* lexer) {
         strcat(value, (char[]) {lexer->c, 0});
         length++;
         lexerAdvance(lexer);
-    }
+    } */
 
-    return createToken(value, TOKEN_ID, length, lexer->line, lexer->column - length);
+    return createToken(value, TOKEN_ID, length_excluding_null, lexer->line, lexer->column - length_excluding_null);
 }
 
 // TODO: add float compat
 Token* lexerParseNumber(Lexer* lexer) {
 
-    char* value = calloc(1, 1);
+    int beg = lexer->i;
+
+    while (isdigit(lexer->c)) {
+        lexerAdvance(lexer);
+    }
+
+    int end = lexer->i;
+
+    int length_excluding_null = end - beg;
+
+    char* value = (char*) arenaPush(arena_main, length_excluding_null + 1, false);
+
+    memcpy(value, lexer->src + beg, length_excluding_null);
+
+    value[length_excluding_null] = '\0';
+
+    /* char* value = calloc(1, 1);
     int length = 0;
 
     while (isdigit(lexer->c)) {
@@ -98,9 +132,9 @@ Token* lexerParseNumber(Lexer* lexer) {
         strcat(value, (char[]) {lexer->c, 0});
         length++;
         lexerAdvance(lexer);
-    }
+    } */
 
-    return createToken(value, TOKEN_INT_LITERAL, length, lexer->line, lexer->column - length);
+    return createToken(value, TOKEN_INT_LITERAL, length_excluding_null, lexer->line, lexer->column - length_excluding_null);
 }
 
 // TODO: handle string and char literals

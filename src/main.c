@@ -1,6 +1,7 @@
 #include "include/io.h"
 #include "include/eon.h"
 #include "include/lexer.h"
+#include "include/arena.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -29,15 +30,19 @@ void runProgram(const char* path, char* const args[]) {
     return;
 }
 
-int main(int argc, char** argv) {
+Arena* arena_main;
 
+int main(int argc, char** argv) {
+    
     if (argc < 2) {
         printf("Please specify input file\n");
         return 1;
     }
-
+    
     char* file_contents = eonReadFile(argv[1]);
-
+    
+    // capacity size I pulled right out of my ass
+    arena_main = createArena(MiB(1));
     eonCompile(file_contents);
 
     free(file_contents);

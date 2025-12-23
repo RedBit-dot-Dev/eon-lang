@@ -1,18 +1,22 @@
 #include "include/parser.h"
 #include "include/types.h"
+#include "include/arena.h"
 #include "stdlib.h"
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+
+extern Arena* arena_main;
 
 // TODO: make single literals forbidden
 
 Parser* createParser(Lexer* lexer) {
 
-    Parser* parser = (Parser*) malloc(sizeof(Parser));
+    Parser* parser = (Parser*) arenaPush(arena_main, sizeof(Parser), false);
     assert(parser && "Could not allocate memory for the parser");
 
     parser->lexer = lexer;
-    parser->token = lexerNextToken(lexer);
+    parser->token = lexerNextToken(parser->lexer);
 
     return parser;
 }
@@ -40,9 +44,8 @@ Token* parserEat(Parser* parser, int type) {
 // TODO: make this handle function calls
 AST* parseId(Parser* parser) {
 
-    char* name = malloc(parser->token->length + 1);
+    char* name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
     assert(name && "Could not allocate memory for name string");
-    strcpy(name, parser->token->value);
     parserEat(parser, TOKEN_ID);
 
     // if it's an assignment, store the variable name, then store it's value as the expression of the rhs of the assignment
@@ -82,9 +85,8 @@ AST* parseDataType(Parser* parser) {
     int data_type = tokenToDataType(parser->token);
     parserEat(parser, TOKEN_DATATYPE);
 
-    char* variable_name = malloc(parser->token->length + 1);
+    char* variable_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
     assert(variable_name && "Could not allocate memory for variable_name string");
-    strcpy(variable_name, parser->token->value);
 
     parserEat(parser, TOKEN_ID);
 
@@ -131,9 +133,8 @@ AST* parseSingleParameter(Parser* parser) {
     int data_type = tokenToDataType(parser->token);
     parserEat(parser, TOKEN_DATATYPE);
 
-    char* parameter_name = malloc(parser->token->length + 1);
+    char* parameter_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
     assert(parameter_name && "Could not allocate memory for parameter_name string");
-    strcpy(parameter_name, parser->token->value);
 
     parserEat(parser, TOKEN_ID);
 
@@ -192,9 +193,8 @@ AST* parseFunction(Parser* parser) {
     int return_type = tokenToDataType(parser->token);
     parserEat(parser, TOKEN_DATATYPE);
 
-    char* function_name = malloc(parser->token->length + 1);
+    char* function_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
     assert(function_name && "Could not allocate memory for function_name string");
-    strcpy(function_name, parser->token->value);
 
     parserEat(parser, TOKEN_ID);
 

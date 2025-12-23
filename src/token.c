@@ -1,12 +1,15 @@
 #include "include/token.h"
+#include "include/arena.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
+extern Arena* arena_main;
+
 Token* createToken(char* value, int type, int length, int line, int column) {
 
-    Token* token = (Token*) malloc(sizeof(Token));
+    Token* token = (Token*) arenaPush(arena_main, sizeof(Token), true);
     assert(token && "Could not allocate memory for token");
 
     token->value = value;
