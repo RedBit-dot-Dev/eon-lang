@@ -2,7 +2,7 @@
 
 void checkFunctionDefinition(AST* ast) {
 
-    int return_type = ast->data_type;
+    //int return_type = ast->data_type;
 
 
 

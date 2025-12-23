@@ -33,14 +33,14 @@ void runProgram(const char* path, char* const args[]) {
 Arena* arena_main;
 
 int main(int argc, char** argv) {
-    
+
     if (argc < 2) {
         printf("Please specify input file\n");
         return 1;
     }
-    
+
     char* file_contents = eonReadFile(argv[1]);
-    
+
     // capacity size I pulled right out of my ass
     arena_main = createArena(MiB(1));
     eonCompile(file_contents);

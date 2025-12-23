@@ -65,15 +65,14 @@ AST* parseId(Parser* parser) {
 }
 
 // TODO: handle sum, subtraction, division etc.
-// TODO: think about this atoi, is it really necessary? I mean, I'm gonna write in a file right?
 AST* parseIntLiteral(Parser* parser) {
-
-    int int_value = atoi(parser->token->value);
-    parserEat(parser, TOKEN_INT_LITERAL);
 
     AST* ast = createAST(AST_INT_LITERAL);
     ast->data_type = TYPE_i32; //! PLACEHOLDER?
-    ast->literal_value.int_v = int_value;
+    ast->literal_value = parser->token->value;
+
+    parserEat(parser, TOKEN_INT_LITERAL);
+
     parserEat(parser, TOKEN_SEMI);
 
     return ast;

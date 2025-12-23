@@ -45,7 +45,7 @@ void writeExpression(FILE* file, AST* ast, int num_tabs) {
             fprintf(file, "ret %s", dataTypeToString(ast->value->data_type));
 
             if (ast->value->node_type != AST_NOOP) {
-                fprintf(file, " %d", ast->value->literal_value.int_v); //TODO: FIXME Assuming is int 
+                fprintf(file, " %s", ast->value->literal_value); //TODO: FIXME Assuming is int 
             }
 
             break;

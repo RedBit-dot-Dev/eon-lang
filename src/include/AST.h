@@ -26,14 +26,7 @@ enum _ast_types{
 
 typedef struct _ast {
     char* name;
-
-    union {
-        char char_v;
-        int int_v;
-        float float_v;
-        char* string_v;
-    } literal_value;
-
+    char* literal_value;
     Vector* children;
     struct _ast* value;
     struct _ast* args_params;
