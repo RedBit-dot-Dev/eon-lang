@@ -71,6 +71,11 @@ int main(int argc, char** argv) {
 
     Lexer* lexer = createLexer(source_code, src_length);
 
+    //Token* tok;
+    //while ((tok = lexerNextToken(lexer))->type != TOKEN_EOF) {
+    //    printToken(tok);
+    //}
+
     free(source_code);
 
     arenaFree(arena_main);

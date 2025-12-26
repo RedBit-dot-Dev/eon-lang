@@ -15,6 +15,7 @@ Token* createToken(char* value, int length, unsigned int line, unsigned int colu
     token->value = value; // string is pre-allocated on the arena in the lexing phase
     token->length = length;
     token->line = line;
+    token->column = column;
     token->type = type;
 
     return token;

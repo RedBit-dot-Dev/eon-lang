@@ -32,7 +32,7 @@ Token* lexerNextToken(Lexer* lexer) {
 
         if (lexer->c == '\r' || lexer->c == '\n' || lexer->c == ' ' || lexer->c == '\t') skipWhitespace(lexer);
 
-        if (isalpha(lexer->c)) return handleId(lexer);
+        if (isalpha(lexer->c) || lexer->c == '_') return handleId(lexer);
 
         if (isdigit(lexer->c)) return handleNumber(lexer);
 
@@ -102,9 +102,8 @@ static void skipWhitespace(Lexer* lexer) {
 }
 
 static Token* handleId(Lexer* lexer) {
-
     unsigned int beg = lexer->i;
-
+    
     while (isalnum(lexer->c) || lexer->c == '_') {
         advance(lexer);
     }
@@ -115,11 +114,11 @@ static Token* handleId(Lexer* lexer) {
 
     char* id = arenaPush(arena_main, length + 1, false);
 
-    memcpy(lexer->src + beg, id, length);
+    memcpy(id, lexer->src + beg, length);
 
     id[length] = '\0';
 
-    Token* token = createToken(id, TOKEN_ID, length, lexer->line, lexer->column);
+    Token* token = createToken(id, length, lexer->line, lexer->column, TOKEN_ID);
 
     int type = checkKeyword(token);
 
@@ -127,11 +126,11 @@ static Token* handleId(Lexer* lexer) {
         token->type = type;
         return token;
     }
-
+    
     type = checkDataType(token);
-
+    
     if (type != -1) {
-        token->type = type;
+        token->type = TOKEN_DATATYPE;
         return token;
     }
 
@@ -165,7 +164,7 @@ static Token* handleNumber(Lexer* lexer) {
     
     char* number = arenaPush(arena_main, length + 1, false);
 
-    memcpy(lexer->src + beg, number, length);
+    memcpy(number, lexer->src + beg, length);
 
     number[length] = '\0';
 
