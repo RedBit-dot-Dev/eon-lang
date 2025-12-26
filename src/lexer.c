@@ -102,8 +102,9 @@ static void skipWhitespace(Lexer* lexer) {
 }
 
 static Token* handleId(Lexer* lexer) {
+
     unsigned int beg = lexer->i;
-    
+
     while (isalnum(lexer->c) || lexer->c == '_') {
         advance(lexer);
     }
@@ -126,9 +127,9 @@ static Token* handleId(Lexer* lexer) {
         token->type = type;
         return token;
     }
-    
+
     type = checkDataType(token);
-    
+
     if (type != -1) {
         token->type = TOKEN_DATATYPE;
         return token;
@@ -161,7 +162,7 @@ static Token* handleNumber(Lexer* lexer) {
     unsigned int end = lexer->i;
 
     unsigned int length = end - beg;
-    
+
     char* number = arenaPush(arena_main, length + 1, false);
 
     memcpy(number, lexer->src + beg, length);

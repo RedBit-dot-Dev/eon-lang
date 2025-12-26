@@ -37,7 +37,11 @@ char* readFile(char* path, unsigned int* length_ptr) {
 
     unsigned int size = getFileSize(file);
     char* contents = (char*) malloc(size + 1); // +1 because of '\0'  
-    assert(contents && "Could not allocate file contents");
+    if (!contents) {
+        printf("Insufficient memory to allocate arena\n");
+        exit(ERROR_INSUFFICIENT_MEMORY_RAM);
+    }
+
     size_t bytes_read = fread(contents, 1, size, file);
 
     if (bytes_read != size) {
