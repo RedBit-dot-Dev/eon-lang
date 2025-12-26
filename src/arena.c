@@ -7,6 +7,11 @@ Arena* createArena(uint64_t capacity) {
 
     Arena* arena = malloc(sizeof(Arena));
 
+    if (!arena) {
+        printf("Insufficient memory to allocate arena\n");
+        exit(ERROR_INSUFFICIENT_MEMORY_RAM);
+    }
+
     arena->capacity = capacity;
     arena->offset = 0;
     arena->memory = calloc(capacity, sizeof(char));
