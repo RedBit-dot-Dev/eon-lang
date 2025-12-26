@@ -1,11 +1,12 @@
 #include "include/error_codes.h"
 #include "include/arena.h"
+#include "include/lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
 
-long getFileSize(FILE* file) {
+unsigned int getFileSize(FILE* file) {
 
     fpos_t original_pos;
 
@@ -15,7 +16,7 @@ long getFileSize(FILE* file) {
     }
 
     fseek(file, 0, SEEK_END);
-    long out = ftell(file);
+    unsigned int out = ftell(file);
 
     if (fsetpos(file, &original_pos) != 0) {
         printf("Could not set file position (fsetpos), error %d\n", errno);
@@ -25,7 +26,7 @@ long getFileSize(FILE* file) {
     return out;
 }
 
-char* readFile(char* path) {
+char* readFile(char* path, unsigned int* length_ptr) {
 
     FILE* file = fopen(path, "r");
 
@@ -34,7 +35,7 @@ char* readFile(char* path) {
         exit(ERROR_IMPROPER_PATH);
     }
 
-    long size = getFileSize(file);
+    unsigned int size = getFileSize(file);
     char* contents = (char*) malloc(size + 1); // +1 because of '\0'  
     assert(contents && "Could not allocate file contents");
     size_t bytes_read = fread(contents, 1, size, file);
@@ -46,6 +47,7 @@ char* readFile(char* path) {
     }
 
     contents[size] = '\0';
+    *length_ptr = size;
     fclose(file);
 
     return contents;
@@ -61,10 +63,13 @@ int main(int argc, char** argv) {
         exit(ERROR_IMPROPER_USAGE);
     }
 
-    char* source_code = readFile(argv[1]);
+    unsigned int src_length;
+    char* source_code = readFile(argv[1], &src_length);
 
     // Size I just pulled out of my ass
     arena_main = createArena(MiB(1));
+
+    Lexer* lexer = createLexer(source_code, src_length);
 
     free(source_code);
 

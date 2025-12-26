@@ -101,7 +101,7 @@ char* tokenTypeToString(int token_type) {
     }
 
     printf("Token type unrecognized\n");
-    exit(ERROR_TOKEN_TYPE_UNRECONIZED);
+    exit(ERROR_TOKEN_TYPE_UNRECOGNIZED);
 
     return "ERROR";
 }
