@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 extern Arena* arena_main;
 
@@ -110,13 +109,13 @@ void insertInSymbolHashTable(Symbol_Hash_Table* h_table, Symbol_Node* s_node) {
     return;
 }
 
-bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int kind, int line_declaration, int line_usage, char* literal_value) {
+bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int kind, int line_definition, int line_usage, char* literal_value) {
 
     if (searchSymbolNode(s_table, name) != NULL) {
         return false;
     }
 
-    Symbol_Node* sn = createSymbolNode(name, data_type, kind, line_declaration, line_usage, literal_value);
+    Symbol_Node* sn = createSymbolNode(name, data_type, kind, line_definition, line_usage, literal_value);
     sn->next = s_table->node_list;
     s_table->node_list = sn;
 
@@ -137,6 +136,7 @@ Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name) {
         if (strcmp(index->key, name) == 0) {
             return index->symbol_node;
         }
+        index = index->next;
     }
 
     return NULL;
@@ -172,14 +172,14 @@ Symbol_Hash_Table* createSymbolHashTable() {
     return ht;
 }
 
-Symbol_Node* createSymbolNode(char* name, int data_type, int kind, int line_declaration, int line_usage, char* literal_value) {
+Symbol_Node* createSymbolNode(char* name, int data_type, int kind, int line_definition, int line_usage, char* literal_value) {
 
     Symbol_Node* sn = (Symbol_Node*) arenaPush(arena_main, sizeof(Symbol_Node), false);
 
     sn->name = name;
     sn->data_type = data_type;
     sn->kind = kind;
-    sn->line_declaration = line_declaration;
+    sn->line_definition = line_definition;
     sn->line_usage = line_usage;
     sn->literal_value = literal_value;
     sn->next = NULL;

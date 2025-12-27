@@ -2,6 +2,7 @@
 #define EON_AST_H
 #include "data_types.h"
 #include "vector.h"
+#include "symbol_table.h"
 
 enum _ast_type {
     AST_INT_LITERAL,
@@ -33,6 +34,7 @@ typedef struct _ast {
     struct _ast* ast_value;
     Vector* args_params;
     Vector* children;
+    Symbol_Table* scope;
 } AST;
 
 AST* createAST(int ast_type);

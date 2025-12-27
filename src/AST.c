@@ -16,6 +16,7 @@ AST* createAST(int ast_type) {
     ast->ast_value = NULL;
     ast->args_params = NULL;    
     ast->children = NULL;
+    ast->scope = NULL;
 
     return ast;
 }

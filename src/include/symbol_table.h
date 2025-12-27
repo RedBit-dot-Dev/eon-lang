@@ -15,7 +15,7 @@ typedef struct _symbol_node {
     char* name;
     char* literal_value;
     int line_usage;
-    int line_declaration;
+    int line_definition;
     enum _symbol_kinds kind;
     enum _data_type data_type;
     struct _symbol_node* next;
@@ -46,7 +46,7 @@ void rehash(Symbol_Hash_Table* h_table);
 
 void insertInSymbolHashTable(Symbol_Hash_Table* h_table, Symbol_Node* s_node);
 
-bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int kind, int line_declaration, int line_usage, char* literal_value);
+bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int kind, int line_definition, int line_usage, char* literal_value);
 
 Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name);
 
@@ -54,7 +54,7 @@ Symbol_Hash_Node* createSymbolHashNode(char* key, Symbol_Node* symbol_node);
 
 Symbol_Hash_Table* createSymbolHashTable();
 
-Symbol_Node* createSymbolNode(char* name, int data_type, int kind, int line_declaration, int line_usage, char* literal_value);
+Symbol_Node* createSymbolNode(char* name, int data_type, int kind, int line_definition, int line_usage, char* literal_value);
 
 Symbol_Table* createSymbolTable(Symbol_Table* parent);
 

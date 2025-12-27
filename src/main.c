@@ -3,6 +3,7 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 #include "include/symbol_table.h"
+#include "include/semantic_analysis.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -61,6 +62,8 @@ char* readFile(char* path, unsigned int* length_ptr) {
 
 Arena* arena_main;
 
+Symbol_Table* symbol_table_main;
+
 int main(int argc, char** argv) {
 
     // TODO: handle flags
@@ -81,7 +84,9 @@ int main(int argc, char** argv) {
 
     free(source_code);
 
-    Symbol_Table* symbol_table_main = createSymbolTable(NULL);
+    symbol_table_main = createSymbolTable(NULL);
+
+    analyseProgram(root);
 
     //symbolTableFree(symbol_table_main);
 
