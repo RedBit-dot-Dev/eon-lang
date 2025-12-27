@@ -31,6 +31,7 @@ typedef struct _ast {
     char* name;
     char* literal_value;
     struct _ast* ast_value;
+    Vector* args_params;
     Vector* children;
 } AST;
 

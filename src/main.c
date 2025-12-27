@@ -1,6 +1,7 @@
 #include "include/error_codes.h"
 #include "include/arena.h"
 #include "include/lexer.h"
+#include "include/parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -74,11 +75,8 @@ int main(int argc, char** argv) {
     arena_main = createArena(MiB(1));
 
     Lexer* lexer = createLexer(source_code, src_length);
-
-    //Token* tok;
-    //while ((tok = lexerNextToken(lexer))->type != TOKEN_EOF) {
-    //    printToken(tok);
-    //}
+    Parser* parser = createParser(lexer);
+    AST* root = parseProgram(parser);
 
     free(source_code);
 

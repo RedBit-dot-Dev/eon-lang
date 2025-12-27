@@ -3,6 +3,7 @@
 
 extern Arena* arena_main;
 
+// TODO: create a special allocator for ast nodes so they can be fully freed easily
 AST* createAST(int ast_type) {
 
     AST* ast = (AST*) arenaPush(arena_main, sizeof(AST), false);
@@ -13,6 +14,7 @@ AST* createAST(int ast_type) {
     ast->name = NULL;
     ast->literal_value = NULL;
     ast->ast_value = NULL;
+    ast->args_params = NULL;    
     ast->children = NULL;
 
     return ast;
