@@ -347,7 +347,6 @@ AST* parseProgram(Parser* parser) {
     AST* root = createAST(AST_COMPOUND);
     root->children = createVector(sizeof(AST*));
 
-
     while (parser->token->type != TOKEN_EOF) {
         vectorPush(root->children, parseGlobalScope(parser));
     }

@@ -52,7 +52,8 @@ Token* lexerNextToken(Lexer* lexer) {
             case '>': return advanceAndReturn(lexer, TOKEN_GREATERTHAN, 1);
 
             default:
-                printf("[Lexer] Unexpected character '%c' at %d:%d\n", lexer->c, lexer->line, lexer->column); exit(ERROR_UNEXPECTED_CHARACTER);
+                printf("[Lexer] Unexpected character '%c' at %d:%d\n", lexer->c, lexer->line, lexer->column);
+                exit(ERROR_UNEXPECTED_CHARACTER);
                 break;
         }
 
@@ -61,7 +62,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return createToken(0, 0, lexer->line, lexer->column, TOKEN_EOF);
 }
 
-static void advance(Lexer* lexer) {
+/*static*/ void advance(Lexer* lexer) {
 
     if (lexer->i < lexer->src_length && lexer->c != '\0') {
         lexer->i++;
@@ -72,7 +73,7 @@ static void advance(Lexer* lexer) {
     return;
 }
 
-static Token* advanceAndReturn(Lexer* lexer, int token_type, int advances) {
+/*static*/ Token* advanceAndReturn(Lexer* lexer, int token_type, int advances) {
 
     char* string = arenaPush(arena_main, 2, false); 
 
@@ -88,7 +89,7 @@ static Token* advanceAndReturn(Lexer* lexer, int token_type, int advances) {
     return token;
 }
 
-static void skipWhitespace(Lexer* lexer) {
+/*static*/ void skipWhitespace(Lexer* lexer) {
 
     while (lexer->c == '\r' || lexer->c == '\n' || lexer->c == ' ' || lexer->c == '\t') {
         if (lexer->c == '\n') {
@@ -101,7 +102,7 @@ static void skipWhitespace(Lexer* lexer) {
     return;
 }
 
-static Token* handleId(Lexer* lexer) {
+/*static*/ Token* handleId(Lexer* lexer) {
 
     unsigned int beg = lexer->i;
 
@@ -138,7 +139,7 @@ static Token* handleId(Lexer* lexer) {
     return token;
 }
 
-static Token* handleNumber(Lexer* lexer) {
+/*static*/ Token* handleNumber(Lexer* lexer) {
 
     bool found_point = false;
 

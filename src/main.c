@@ -2,6 +2,7 @@
 #include "include/arena.h"
 #include "include/lexer.h"
 #include "include/parser.h"
+#include "include/symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -39,7 +40,7 @@ char* readFile(char* path, unsigned int* length_ptr) {
     unsigned int size = getFileSize(file);
     char* contents = (char*) malloc(size + 1); // +1 because of '\0'  
     if (!contents) {
-        printf("Insufficient memory to allocate arena\n");
+        printf("Insufficient memory to allocate contents\n");
         exit(ERROR_INSUFFICIENT_MEMORY_RAM);
     }
 
@@ -79,6 +80,10 @@ int main(int argc, char** argv) {
     AST* root = parseProgram(parser);
 
     free(source_code);
+
+    Symbol_Table* symbol_table_main = createSymbolTable(NULL);
+
+    //symbolTableFree(symbol_table_main);
 
     arenaFree(arena_main);
 
