@@ -82,30 +82,34 @@ void analyseFunctionDefinition(AST* ast) {
 
     appendChildScope(ast->scope, function_body_scope);
 
-    AST** params = (AST**) ast->args_params->items;
-    for (int i = 0; i < ast->args_params->used; i++) {
-
-        params[i]->scope = function_body_scope;
-        
-        if (searchSymbolNode(function_body_scope, params[i]->name) != NULL) {
-            printf("Redeclaration of parameter '%s' at line %d\n", ast->name, ast->line);
-            exit(ERROR_PARAMETER_REDECLARATION);
+    if (ast->args_params != NULL) {
+        AST** params = (AST**) ast->args_params->items;
+        for (int i = 0; i < ast->args_params->used; i++) {
+    
+            params[i]->scope = function_body_scope;
+            
+            if (searchSymbolNode(function_body_scope, params[i]->name) != NULL) {
+                printf("Redeclaration of parameter '%s' at line %d\n", ast->name, ast->line);
+                exit(ERROR_PARAMETER_REDECLARATION);
+            }
+    
+            insertInSymbolTable(function_body_scope, params[i]->name, params[i]->data_type, SYMBOL_PARAMETER, params[i]->line, -1, NULL);
+    
         }
-
-        insertInSymbolTable(function_body_scope, params[i]->name, params[i]->data_type, SYMBOL_PARAMETER, params[i]->line, -1, NULL);
-
     }
 
 
-    AST** children = (AST**) ast->children->items;
-    for (int i = 0; i < ast->children->used; i++) {
-
-        children[i]->scope = function_body_scope;
-
-        if (children[i]->ast_type == AST_RETURN) analyseReturn(children[i], ast);
-
-        else analyseExpression(children[i]);
-
+    if (ast->children != NULL) {
+        AST** children = (AST**) ast->children->items;
+        for (int i = 0; i < ast->children->used; i++) {
+    
+            children[i]->scope = function_body_scope;
+    
+            if (children[i]->ast_type == AST_RETURN) analyseReturn(children[i], ast);
+    
+            else analyseExpression(children[i]);
+    
+        }
     }
 
     Symbol_Node* func_declaration = searchSymbolNode(ast->scope, ast->name);
