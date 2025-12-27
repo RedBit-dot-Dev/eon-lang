@@ -27,6 +27,7 @@ void analyseExpression(AST* ast) {
     return;
 }
 
+// TODO: Handle variable return better
 void analyseReturn(AST* ast, AST* function_ast) {
 
     int literal_type = ast->ast_value->ast_type;

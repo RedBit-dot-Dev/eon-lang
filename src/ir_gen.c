@@ -45,7 +45,10 @@ void writeVarDeclaration(AST* ast, FILE* file) {
         scope_to_search = scope_to_search->parent;
     }
 
-    fprintf(file, "%%%s = alloca %s, align %d\n", var->name, dataTypeToString(var->data_type), getAlignSize(var->data_type));
+    char* data_type_string = dataTypeToString(var->data_type);
+    int align_size = getAlignSize(var->data_type);
+
+    fprintf(file, "%%%s = alloca %s, align %d\n", var->name, data_type_string, align_size);
 
     return;
 }
@@ -62,27 +65,46 @@ void writeVarDefinition(AST* ast, FILE* file) {
         scope_to_search = scope_to_search->parent;
     }
 
-    fprintf(file, "%%%s = alloca %s, %s %s, align %d\n",
-        var->name,
-        dataTypeToString(var->data_type),
-        dataTypeToString(var->data_type),
+    char* data_type_string = dataTypeToString(var->data_type);
+    int align_size = getAlignSize(var->data_type);
+
+    fprintf(file, "%%%s = alloca %s, align %d\n", var->name, data_type_string, align_size);
+
+    fprintf(file, "\tstore %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+        data_type_string,
         var->literal_value,
-        getAlignSize(var->data_type)
+        data_type_string,
+        var->name
     );
 
     return;
 }
 
-// TODO: handle variable return
 void writeReturn(AST* ast, FILE* file) {
 
-    fprintf(file, "ret %s", dataTypeToString(ast->ast_value->data_type));
+    char* data_type_string = dataTypeToString(ast->ast_value->data_type);
+    int align_size = getAlignSize(ast->ast_value->data_type);
 
-    if (ast->ast_value->ast_type != AST_NOOP) {
-        fprintf(file, " %s", ast->ast_value->literal_value);
+    if (ast->ast_value->ast_type != AST_VARIABLE) {
+
+        if (ast->ast_value->ast_type == AST_NOOP) {
+            fprintf(file, "ret void\n");
+            return;
+        }
+
+        fprintf(file, "ret %s %s\n", data_type_string, ast->ast_value->literal_value);
+        return;
     }
 
-    fprintf(file, "\n");
+    fprintf(file, "%%1 = load %s, ptr %%%s, align %d\n",
+        data_type_string,
+        ast->ast_value->name,
+        align_size
+    );
+
+    fprintf(file, "\tret %s %%1\n", data_type_string); //!FIXME: assumed to be 1 tab
+
+    return;
 }
 
 // TODO: Finish this
