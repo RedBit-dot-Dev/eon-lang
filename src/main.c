@@ -4,10 +4,13 @@
 #include "include/parser.h"
 #include "include/symbol_table.h"
 #include "include/semantic_analysis.h"
+#include "include/ir_gen.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 unsigned int getFileSize(FILE* file) {
 
@@ -60,6 +63,30 @@ char* readFile(char* path, unsigned int* length_ptr) {
     return contents;
 }
 
+void runProgram(const char* path, char* const args[]) {
+
+    pid_t pid = fork();
+
+    if (pid == -1) {
+        printf("fork failed\n");
+        exit(1);
+    }
+
+    // is child process
+    else if (pid == 0) {
+        execvp(path, args);
+        perror("execvp");
+        exit(1);
+    }
+
+    // is parent, waiting for child
+    else {
+        waitpid(pid, NULL, 0);
+    }
+
+    return;
+}
+
 Arena* arena_main;
 
 Symbol_Table* symbol_table_main;
@@ -85,8 +112,16 @@ int main(int argc, char** argv) {
     free(source_code);
 
     symbol_table_main = createSymbolTable(NULL);
-
     analyseProgram(root);
+
+    //printSymbolTable(symbol_table_main, 0);
+
+    FILE* ir_file = fopen("IR.ll", "w");
+    writeProgram(root, ir_file);
+    fclose(ir_file);
+
+    char* args1[] = {"clang", "IR.ll", NULL};
+    runProgram(args1[0], args1);
 
     //symbolTableFree(symbol_table_main);
 

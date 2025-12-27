@@ -1,4 +1,5 @@
 #include "include/data_types.h"
+#include "include/error_codes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -92,7 +93,7 @@ char* dataTypeToString(const int data_type) {
     }
 
     printf("Data type not recognized\n");
-    exit(1);
+    exit(ERROR_DATA_TYPE_UNRECOGNIZED);
 
     return "ERROR";
 }

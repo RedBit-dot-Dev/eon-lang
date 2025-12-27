@@ -40,6 +40,10 @@ typedef struct _symbol_table {
     struct _symbol_table* parent;
 } Symbol_Table;
 
+char* symbolKindToString(int symbol_kind);
+
+void printSymbolTable(Symbol_Table* s_table, int tab_count);
+
 int hash(Symbol_Hash_Table* h_table, char* key);
 
 void rehash(Symbol_Hash_Table* h_table);

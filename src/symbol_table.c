@@ -7,6 +7,57 @@
 
 extern Arena* arena_main;
 
+char* symbolKindToString(int symbol_kind) {
+
+    switch (symbol_kind) {
+        case SYMBOL_CONST: return "SYMBOL_CONST";
+        case SYMBOL_FUNCTION: return "SYMBOL_FUNCTION";
+        case SYMBOL_PARAMETER: return "SYMBOL_PARAMETER";
+        case SYMBOL_VAR: return "SYMBOL_VAR";
+    }
+
+    return NULL;
+}
+
+void printSymbolTable(Symbol_Table* s_table, int tab_count) {
+
+    if (s_table == NULL) return;
+    
+
+    Symbol_Node* index = s_table->node_list;
+
+    while (index != NULL) {
+
+        for (int i = 0; i < tab_count; i++) {
+            printf("\t");
+        }
+
+        printf("NAME: %s, KIND: %s, DATA_TYPE: %s, LINE_DEFINITION: %d, LINE_USAGE: %d, LITERAL_VALUE: %s\n",
+            index->name,
+            symbolKindToString(index->kind),
+            dataTypeToString(index->data_type),
+            index->line_definition,
+            index->line_usage,
+            index->literal_value
+        );
+
+        index = index->next;
+
+    }
+
+    if (s_table->child_scopes != NULL) {
+
+        Symbol_Table** children = (Symbol_Table**) s_table->child_scopes->items;
+
+        for (int i = 0; i < s_table->child_scopes->used; i++) {
+            printSymbolTable(children[i], tab_count+1);
+        }
+
+    }
+
+    return;
+}
+
 int hash(Symbol_Hash_Table* h_table, char* key) {
 
     int key_v = 0;
@@ -127,7 +178,7 @@ bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int k
 Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name) {
 
     if (s_table->hash_table == NULL || s_table->hash_table->array == NULL) return NULL;
-    
+
     int hashed = hash(s_table->hash_table, name);
 
     Symbol_Hash_Node* index = s_table->hash_table->array[hashed];

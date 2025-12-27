@@ -33,7 +33,12 @@ void analyseReturn(AST* ast, AST* function_ast) {
     int data_type = function_ast->data_type;
 
     // TODO?: Maybe turn this into a switch case
-    if (literal_type == AST_INT_LITERAL && (data_type == TYPE_FLOAT || data_type == TYPE_DOUBLE)) {
+    if (literal_type == AST_NOOP && data_type != TYPE_VOID) {
+        printf("Return type mismatch at line %d\n", ast->line);
+        exit(ERROR_RETURN_TYPE_MISMATCH);
+    }
+
+    else if (literal_type == AST_INT_LITERAL && (data_type == TYPE_FLOAT || data_type == TYPE_DOUBLE)) {
         printf("Return type mismatch at line %d\n", ast->line);
         exit(ERROR_RETURN_TYPE_MISMATCH);
     }
@@ -91,7 +96,7 @@ void analyseFunctionDefinition(AST* ast) {
 
     }
 
-    return;
+
     AST** children = (AST**) ast->children->items;
     for (int i = 0; i < ast->children->used; i++) {
 
@@ -99,7 +104,7 @@ void analyseFunctionDefinition(AST* ast) {
 
         if (children[i]->ast_type == AST_RETURN) analyseReturn(children[i], ast);
 
-        else analyseExpression(ast);
+        else analyseExpression(children[i]);
 
     }
 
@@ -123,7 +128,7 @@ void analyseVarDeclaration(AST* ast) {
 
     while (scope_to_search != NULL) {
 
-        if (searchSymbolNode(ast->scope, ast->name) != NULL) {
+        if (searchSymbolNode(scope_to_search, ast->name) != NULL) {
             printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
             exit(ERROR_VAR_REDECLARATION);
         }
@@ -140,11 +145,12 @@ void analyseVarDeclaration(AST* ast) {
 void analyseVarDefinition(AST* ast) {
 
     // Searches current scope and all parent scopes
+
     Symbol_Table* scope_to_search = ast->scope;
 
     while (scope_to_search != NULL) {
 
-        if (searchSymbolNode(ast->scope, ast->name) != NULL) {
+        if (searchSymbolNode(scope_to_search, ast->name) != NULL) {
             printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
             exit(ERROR_VAR_REDECLARATION);
         }

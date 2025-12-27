@@ -194,9 +194,12 @@ AST* parseDataType(Parser* parser) {
     ast->name = var_name;
     ast->line = parser->lexer->line;
 
-    if (parser->token->type == TOKEN_SEMI) return ast;
+    if (parser->token->type == TOKEN_SEMI) {
+        parserEat(parser, TOKEN_SEMI);
+        return ast;
+    }
 
-    ast->ast_type = AST_VAR_DECLARATION;
+    ast->ast_type = AST_VAR_DEFINITION;
     parserEat(parser, TOKEN_EQUALS);
 
     ast->ast_value = parseRHS(parser);
@@ -241,6 +244,14 @@ AST* parseReturn(Parser* parser) {
     parserEat(parser, TOKEN_RETURN);
 
     ast->line = parser->lexer->line;
+
+    if (parser->token->type == TOKEN_SEMI) {
+        ast->ast_value = createAST(AST_NOOP);
+        ast->ast_value->data_type = TYPE_VOID;
+        parserEat(parser, TOKEN_SEMI);
+        return ast;
+    }
+
     ast->ast_value = parseRHS(parser);
 
     return ast;
@@ -334,7 +345,7 @@ AST* parseGlobalScope(Parser* parser) {
         default:
             break;
     }
-
+    printf("%d", parser->token->type);
     printf("[Parser]: Expression at %d:%d not supported in the main scope\n", parser->token->line, parser->token->column);
     exit(ERROR_EXPRESSION_NOT_SUPPORTED);
 

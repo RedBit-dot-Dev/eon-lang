@@ -1,3 +1,6 @@
+int global = 3;
+
 fn int main(i32 a, bool b) {
-    return 0;
+    int local = 5;
+    return 32;
 }
