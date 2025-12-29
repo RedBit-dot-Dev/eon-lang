@@ -30,34 +30,78 @@ void analyseExpression(AST* ast) {
 // TODO: Handle variable return better
 void analyseReturn(AST* ast, AST* function_ast) {
 
-    int literal_type = ast->ast_value->ast_type;
-    int data_type = function_ast->data_type;
+    assert(AST_MAX == 17 && TYPE_MAX == 13 && "analyseReturn() must handle all AST and data types");
 
-    // TODO?: Maybe turn this into a switch case
-    if (literal_type == AST_NOOP && data_type != TYPE_VOID) {
-        printf("Return type mismatch at line %d\n", ast->line);
-        exit(ERROR_RETURN_TYPE_MISMATCH);
-    }
+    int return_data_type = function_ast->data_type;
 
-    else if (literal_type == AST_INT_LITERAL && (data_type == TYPE_FLOAT || data_type == TYPE_DOUBLE)) {
-        printf("Return type mismatch at line %d\n", ast->line);
-        exit(ERROR_RETURN_TYPE_MISMATCH);
-    }
+    switch (ast->ast_value->ast_type) {
 
-    else if (literal_type == AST_FLOAT_LITERAL && (data_type != TYPE_FLOAT && data_type != TYPE_DOUBLE)) {
-        printf("Return type mismatch at line %d\n", ast->line);
-        exit(ERROR_RETURN_TYPE_MISMATCH);
-    }
+        case AST_NOOP:
 
-    else if (literal_type == AST_CHAR_LITERAL && data_type != TYPE_i8) {
-        printf("Return type mismatch at line %d\n", ast->line);
-        exit(ERROR_RETURN_TYPE_MISMATCH);
-    }
+            if (return_data_type != TYPE_VOID) {
+                printf("Return type mismatch at line %d\nFunction '%s' doesn't return any value (type void)\n", ast->line, function_ast->name);
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
 
-    // TODO: check this
-    else if (literal_type == AST_STRING_LITERAL && data_type != TYPE_i64) {
-        printf("Return type mismatch at line %d\n", ast->line);
-        exit(ERROR_RETURN_TYPE_MISMATCH);
+            break;
+
+        case AST_INT_LITERAL:
+
+            if (return_data_type == TYPE_FLOAT || return_data_type == TYPE_DOUBLE) {
+                printf("Return type mismatch at line %d\nFunction '%s' returns an integer\n", ast->line, function_ast->name);
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_FLOAT_LITERAL:
+
+            if (return_data_type != TYPE_FLOAT && return_data_type != TYPE_DOUBLE) {
+                printf("Return type mismatch at line %d\nFunction '%s' returns a float/double\n", ast->line, function_ast->name);
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_CHAR_LITERAL:
+
+            if (return_data_type != TYPE_i8) {
+                printf("Return type mismatch at line %d\nFunction '%s' returns a character\n", ast->line, function_ast->name);
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_STRING_LITERAL:
+
+            // TODO: Make this
+
+            break;
+
+        case AST_VARIABLE:
+
+            Symbol_Node* var = searchSymbolNode(ast->scope, ast->ast_value->name);
+
+            if (var == NULL) {
+                printf("Variable '%s' not defined at line %d\n", ast->ast_value->name, ast->line);
+                exit(ERROR_VAR_NOT_DEFINED);
+            }
+
+            var->line_usage = ast->line;
+
+            if (var->data_type != return_data_type) {
+                printf("Return type mismatch at line %d\nFunction '%s' return type doesn't data type of variable '%s'",
+                    ast->line,
+                    function_ast->name,
+                    ast->ast_value->name
+                );
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
+
+            break;
+
+        default:
+            break;
     }
 
     ast->ast_value->data_type = function_ast->data_type;
@@ -89,7 +133,7 @@ void analyseFunctionDefinition(AST* ast) {
     
             params[i]->scope = function_body_scope;
             
-            if (searchSymbolNode(function_body_scope, params[i]->name) != NULL) {
+            if (searchScope(function_body_scope, params[i]->name) != NULL) {
                 printf("Redeclaration of parameter '%s' at line %d\n", ast->name, ast->line);
                 exit(ERROR_PARAMETER_REDECLARATION);
             }
@@ -128,69 +172,97 @@ void analyseFunctionDefinition(AST* ast) {
 
 void analyseVarDeclaration(AST* ast) {
 
-    // Searches current scope and all parent scopes
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-
-        if (searchSymbolNode(scope_to_search, ast->name) != NULL) {
-            printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
-            exit(ERROR_VAR_REDECLARATION);
-        }
-
-        scope_to_search = scope_to_search->parent;
-
+    if (searchSymbolNode(ast->scope, ast->name) != NULL) {
+        printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
+        exit(ERROR_VAR_REDECLARATION);
     }
-
+    
     insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, -1, -1, NULL);
-
+    
     return;
 }
 
 void analyseVarDefinition(AST* ast) {
-
-    // Searches current scope and all parent scopes
-
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-
-        if (searchSymbolNode(scope_to_search, ast->name) != NULL) {
-            printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
-            exit(ERROR_VAR_REDECLARATION);
-        }
-
-        scope_to_search = scope_to_search->parent;
-
+    
+    if (searchSymbolNode(ast->scope, ast->name) != NULL) {
+        printf("Redeclaration of variable '%s' at line %d\n", ast->name, ast->line);
+        exit(ERROR_VAR_REDECLARATION);
     }
 
-    int literal_type = ast->ast_value->ast_type;
-    int data_type = ast->data_type;
+    assert(AST_MAX == 17 && TYPE_MAX == 13 && "analyseReturn() must handle all AST and data types");
 
-    // TODO?: Maybe turn this into a switch case
-    if (literal_type == AST_INT_LITERAL && (data_type == TYPE_FLOAT || data_type == TYPE_DOUBLE)) {
-        printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
-        exit(ERROR_VAR_TYPE_MISMATCH);
-    }
+    switch (ast->ast_value->ast_type) {
 
-    else if (literal_type == AST_FLOAT_LITERAL && (data_type != TYPE_FLOAT && data_type != TYPE_DOUBLE)) {
-        printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
-        exit(ERROR_VAR_TYPE_MISMATCH);
-    }
+        case AST_NOOP:
 
-    else if (literal_type == AST_CHAR_LITERAL && data_type != TYPE_i8) {
-        printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
-        exit(ERROR_VAR_TYPE_MISMATCH);
-    }
+            if (ast->data_type != TYPE_VOID) {
+                printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
+                exit(ERROR_VAR_TYPE_MISMATCH);
+            }
 
-    // TODO: check this
-    else if (literal_type == AST_STRING_LITERAL && data_type != TYPE_i64) {
-        printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
-        exit(ERROR_VAR_TYPE_MISMATCH);
+            break;
+
+        case AST_INT_LITERAL:
+
+            if (ast->data_type == TYPE_FLOAT || ast->data_type == TYPE_DOUBLE) {
+                printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
+                exit(ERROR_VAR_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_FLOAT_LITERAL:
+
+            if (ast->data_type != TYPE_FLOAT && ast->data_type != TYPE_DOUBLE) {
+                printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
+                exit(ERROR_VAR_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_CHAR_LITERAL:
+
+            if (ast->data_type != TYPE_i8) {
+                printf("Type of variable '%s' doesn't match it's assigned value at line %d\n", ast->name, ast->line);
+                exit(ERROR_VAR_TYPE_MISMATCH);
+            }
+
+            break;
+
+        case AST_STRING_LITERAL:
+
+            // TODO: Make this
+
+            break;
+
+        case AST_VARIABLE:
+
+            Symbol_Node* var = searchSymbolNode(ast->scope, ast->ast_value->name);
+
+            if (var == NULL) {
+                printf("Variable '%s' not defined at line %d\n", ast->name, ast->line);
+                exit(ERROR_VAR_NOT_DEFINED);
+            }
+
+            var->line_usage = ast->line;
+
+            if (var->data_type != ast->data_type) {
+                printf("Type of variable '%s' doesn't match '%s' at line %d\n", var->name, ast->name, ast->line);
+                exit(ERROR_RETURN_TYPE_MISMATCH);
+            }
+
+            insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, ast->line, -1, NULL);
+            return;
+
+            break;
+
+        default:
+            break;
     }
 
     insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, ast->line, -1, ast->ast_value->literal_value);
 
+    return;
 }
 
 void analyseProgram(AST* root) {

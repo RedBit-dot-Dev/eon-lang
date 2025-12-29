@@ -52,6 +52,8 @@ void insertInSymbolHashTable(Symbol_Hash_Table* h_table, Symbol_Node* s_node);
 
 bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int kind, int line_definition, int line_usage, char* literal_value);
 
+Symbol_Node* searchScope(Symbol_Table* s_table, char* name);
+
 Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name);
 
 Symbol_Hash_Node* createSymbolHashNode(char* key, Symbol_Node* symbol_node);

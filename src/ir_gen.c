@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+int global_counter = 1;
+
 int getAlignSize(int data_type) {
 
     assert(TYPE_MAX == 13 && "getAlignSize() must handle all data types");
@@ -35,15 +37,7 @@ int getAlignSize(int data_type) {
 
 void writeVarDeclaration(AST* ast, FILE* file) {
 
-    Symbol_Node* var = NULL;
-
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-        var = searchSymbolNode(scope_to_search, ast->name);
-        if (var != NULL) break;
-        scope_to_search = scope_to_search->parent;
-    }
+    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
 
     char* data_type_string = dataTypeToString(var->data_type);
     int align_size = getAlignSize(var->data_type);
@@ -55,27 +49,43 @@ void writeVarDeclaration(AST* ast, FILE* file) {
 
 void writeVarDefinition(AST* ast, FILE* file) {
 
-    Symbol_Node* var = NULL;
-
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-        var = searchSymbolNode(scope_to_search, ast->name);
-        if (var != NULL) break;
-        scope_to_search = scope_to_search->parent;
-    }
+    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
 
     char* data_type_string = dataTypeToString(var->data_type);
     int align_size = getAlignSize(var->data_type);
 
     fprintf(file, "%%%s = alloca %s, align %d\n", var->name, data_type_string, align_size);
 
-    fprintf(file, "\tstore %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
-        data_type_string,
-        var->literal_value,
-        data_type_string,
-        var->name
-    );
+    // Only occurs if initialized with another variable
+    if (var->literal_value == NULL) {
+
+        fprintf(file, "\t%%%d = load %s, %s* %%%s, align %d\n", //!FIXME: assumed to be 1 tab
+            global_counter,
+            data_type_string,
+            data_type_string,
+            ast->ast_value->name,
+            align_size
+        );
+
+        fprintf(file, "\tstore %s %%%d, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+            data_type_string,
+            global_counter++,
+            data_type_string,
+            var->name
+        );
+
+    }
+
+    else {
+
+        fprintf(file, "\tstore %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+            data_type_string,
+            var->literal_value,
+            data_type_string,
+            var->name
+        );
+
+    }
 
     return;
 }
@@ -96,13 +106,15 @@ void writeReturn(AST* ast, FILE* file) {
         return;
     }
 
-    fprintf(file, "%%1 = load %s, ptr %%%s, align %d\n",
+    fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
+        global_counter,
+        data_type_string,
         data_type_string,
         ast->ast_value->name,
         align_size
     );
 
-    fprintf(file, "\tret %s %%1\n", data_type_string); //!FIXME: assumed to be 1 tab
+    fprintf(file, "\tret %s %%%d\n", data_type_string, global_counter++); //!FIXME: assumed to be 1 tab
 
     return;
 }
@@ -164,6 +176,8 @@ void writeFunctionDeclaration(AST* ast, FILE* file) {
 
 void writeFunctionDefinition(AST* ast, FILE* file) {
 
+    global_counter = 1;
+
     fprintf(file, "define %s @%s", dataTypeToString(ast->data_type), ast->name);
     writeParameters(ast, file);
 
@@ -190,15 +204,7 @@ void writeFunctionDefinition(AST* ast, FILE* file) {
 
 void writeGlobalVarDeclaration(AST* ast, FILE* file) {
 
-    Symbol_Node* var = NULL;
-
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-        var = searchSymbolNode(scope_to_search, ast->name);
-        if (var != NULL) break;
-        scope_to_search = scope_to_search->parent;
-    }
+    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
 
     // Global variables always need to be initialized with a starting value (in this case, 0)
     fprintf(file, "@%s = global %s 0, align %d", var->name, dataTypeToString(var->data_type), getAlignSize(var->data_type));
@@ -208,15 +214,7 @@ void writeGlobalVarDeclaration(AST* ast, FILE* file) {
 
 void writeGlobalVarDefinition(AST* ast, FILE* file) {
 
-    Symbol_Node* var = NULL;
-
-    Symbol_Table* scope_to_search = ast->scope;
-
-    while (scope_to_search != NULL) {
-        var = searchSymbolNode(scope_to_search, ast->name);
-        if (var != NULL) break;
-        scope_to_search = scope_to_search->parent;
-    }
+    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
 
     fprintf(file, "@%s = global %s %s, align %d",
         var->name,

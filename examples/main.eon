@@ -2,5 +2,6 @@ int global = 3;
 
 fn int main(i32 a, bool b) {
     int local = 5;
-    return local;
+    int locals = local;
+    return locals;
 }

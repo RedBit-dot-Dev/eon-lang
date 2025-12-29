@@ -82,51 +82,45 @@ void rehash(Symbol_Hash_Table* h_table) {
 
     int arr_size = h_table->used;
 
-    char* arr_names[arr_size];
     Symbol_Node* arr_nodes[arr_size];
 
     for (int i = 0, j = 0; i < h_table->capacity; i++) {
 
-        Symbol_Hash_Node* index = h_table->array[i];
-        while (index != NULL) {
-
-            arr_names[j] = index->key;
-            arr_nodes[j] = index->symbol_node;
-            j++;
+        if (h_table->array[i] != NULL) {
             
-            if (index == h_table->array[i]) {
-                h_table->array[i] = NULL;
+            Symbol_Hash_Node* index = h_table->array[i];
+    
+            while (index->next != NULL) {
+    
+                arr_nodes[j++] = index->symbol_node;
+    
+                Symbol_Hash_Node* to_free = index;
+                index = index->next;
+                free(to_free);
             }
-            
-            Symbol_Hash_Node* previous = index;
-            index = index->next;
-            free(previous);
+
+            arr_nodes[j++] = index->symbol_node;
+
+            free(index);
+
+            h_table->array[i] = NULL;
+
         }
 
     }
 
     h_table->capacity *= 2;
     h_table->used = 0;
-    h_table->array = realloc(h_table->array, h_table->capacity);
 
-    // Pointing the new allocated part to NULL (half - 1 to end just to be certain)
-    for (int i = (h_table->capacity/2) -1; i < h_table->capacity; i++) {
+    h_table->array = realloc(h_table->array, sizeof(Symbol_Hash_Node*) * h_table->capacity);
+
+    for (int i = h_table->capacity/2; i < h_table->capacity; i++) {
         h_table->array[i] = NULL;
     }
     
 
-    // Manually inserting into hash table to prevent circular calls if used > 80% capacity
     for (int i = 0; i < arr_size; i++) {
-
-        int hashed = hash(h_table, arr_names[i]);
-
-        Symbol_Hash_Node* hn = createSymbolHashNode(arr_names[i], arr_nodes[i]);
-
-        hn->next = h_table->array[hashed];
-        h_table->array[hashed] = hn;
-
-        h_table->used++;
-
+        insertInSymbolHashTable(h_table, arr_nodes[i]);
     }
 
     return;
@@ -175,22 +169,40 @@ bool insertInSymbolTable(Symbol_Table* s_table, char* name, int data_type, int k
     return true;
 }
 
-Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name) {
-
+Symbol_Node* searchScope(Symbol_Table* s_table, char* name) {
+    
     if (s_table->hash_table == NULL || s_table->hash_table->array == NULL) return NULL;
-
+    
     int hashed = hash(s_table->hash_table, name);
-
+    
     Symbol_Hash_Node* index = s_table->hash_table->array[hashed];
-
+    
     while (index != NULL) {
         if (strcmp(index->key, name) == 0) {
             return index->symbol_node;
         }
         index = index->next;
     }
-
+    
     return NULL;
+}
+
+Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name) {
+
+    Symbol_Table* scope_to_search = s_table;
+    Symbol_Node* result = NULL;
+
+    while (scope_to_search != NULL) {
+
+        result = searchScope(scope_to_search, name);
+
+        if (result != NULL) break;
+
+        scope_to_search = scope_to_search->parent;
+
+    }
+
+    return result;
 }
 
 Symbol_Hash_Node* createSymbolHashNode(char* key, Symbol_Node* symbol_node) {
