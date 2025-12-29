@@ -15,6 +15,12 @@
 
 //void analyseExpression(AST* ast);
 
+void analyseVarDeclaration(AST* ast);
+
+void analyseVarDefinition(AST* ast);
+
+void analyseAssignment(AST* ast);
+
 void analyseExpression(AST* ast);
 
 void analyseReturn(AST* ast, AST* function_ast);
@@ -22,10 +28,6 @@ void analyseReturn(AST* ast, AST* function_ast);
 void analyseFunctionDeclaration(AST* ast);
 
 void analyseFunctionDefinition(AST* ast);
-
-void analyseVarDefinition(AST* ast);
-
-void analyseVarDeclaration(AST* ast);
 
 void analyseProgram(AST* root);
 

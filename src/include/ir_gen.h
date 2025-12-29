@@ -4,11 +4,13 @@
 
 int getAlignSize(int data_type);
 
-void writeVarDeclaration(AST* ast, FILE* file);
+void writeVarDeclaration(AST* ast, FILE* file, int tab_count);
 
-void writeVarDefinition(AST* ast, FILE* file);
+void writeVarDefinition(AST* ast, FILE* file, int tab_count);
 
-void writeReturn(AST* ast, FILE* file);
+void writeAssignment(AST* ast, FILE* file, int tab_count);
+
+void writeReturn(AST* ast, FILE* file, int tab_count);
 
 void writeExpression(AST* ast, FILE* file, int tab_count);
 

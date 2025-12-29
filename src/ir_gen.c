@@ -6,6 +6,10 @@
 
 int global_counter = 1;
 
+#define INSERT_TABS(n, f)   for (int i = 0; i < (n); i++) {\
+                                fprintf((f), "\t");\
+                            }
+
 int getAlignSize(int data_type) {
 
     assert(TYPE_MAX == 13 && "getAlignSize() must handle all data types");
@@ -35,31 +39,36 @@ int getAlignSize(int data_type) {
     return -1;
 }
 
-void writeVarDeclaration(AST* ast, FILE* file) {
+void writeVarDeclaration(AST* ast, FILE* file, int tab_count) {
 
-    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
+    char* data_type_string = dataTypeToString(ast->data_type);
+    int align_size = getAlignSize(ast->data_type);
 
-    char* data_type_string = dataTypeToString(var->data_type);
-    int align_size = getAlignSize(var->data_type);
-
-    fprintf(file, "%%%s = alloca %s, align %d\n", var->name, data_type_string, align_size);
+    INSERT_TABS(tab_count, file);
+    fprintf(file, "%%%s = alloca %s, align %d\n", ast->name, data_type_string, align_size);
 
     return;
 }
 
-void writeVarDefinition(AST* ast, FILE* file) {
+void writeVarDefinition(AST* ast, FILE* file, int tab_count) {
 
-    Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
+    writeVarDeclaration(ast, file, tab_count);
 
-    char* data_type_string = dataTypeToString(var->data_type);
-    int align_size = getAlignSize(var->data_type);
+    writeAssignment(ast, file, tab_count);
 
-    fprintf(file, "%%%s = alloca %s, align %d\n", var->name, data_type_string, align_size);
+    return;
+}
+
+void writeAssignment(AST* ast, FILE* file, int tab_count) {
+
+    char* data_type_string = dataTypeToString(ast->ast_value->data_type);
+    int align_size = getAlignSize(ast->ast_value->data_type);
 
     // Only occurs if initialized with another variable
-    if (var->literal_value == NULL) {
+    if (ast->ast_value->ast_type == AST_VARIABLE) {
 
-        fprintf(file, "\t%%%d = load %s, %s* %%%s, align %d\n", //!FIXME: assumed to be 1 tab
+        INSERT_TABS(tab_count, file);
+        fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
             global_counter,
             data_type_string,
             data_type_string,
@@ -67,30 +76,31 @@ void writeVarDefinition(AST* ast, FILE* file) {
             align_size
         );
 
-        fprintf(file, "\tstore %s %%%d, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+        INSERT_TABS(tab_count, file);
+        fprintf(file, "store %s %%%d, %s* %%%s\n", //!FIXME: assumed to be 1 tab
             data_type_string,
             global_counter++,
             data_type_string,
-            var->name
+            ast->name
         );
 
     }
 
     else {
 
-        fprintf(file, "\tstore %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+        INSERT_TABS(tab_count, file);
+        fprintf(file, "store %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
             data_type_string,
-            var->literal_value,
+            ast->ast_value->literal_value,
             data_type_string,
-            var->name
+            ast->name
         );
 
     }
 
-    return;
 }
 
-void writeReturn(AST* ast, FILE* file) {
+void writeReturn(AST* ast, FILE* file, int tab_count) {
 
     char* data_type_string = dataTypeToString(ast->ast_value->data_type);
     int align_size = getAlignSize(ast->ast_value->data_type);
@@ -98,14 +108,17 @@ void writeReturn(AST* ast, FILE* file) {
     if (ast->ast_value->ast_type != AST_VARIABLE) {
 
         if (ast->ast_value->ast_type == AST_NOOP) {
+            INSERT_TABS(tab_count, file);
             fprintf(file, "ret void\n");
             return;
         }
 
+        INSERT_TABS(tab_count, file);
         fprintf(file, "ret %s %s\n", data_type_string, ast->ast_value->literal_value);
         return;
     }
 
+    INSERT_TABS(tab_count, file);
     fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
         global_counter,
         data_type_string,
@@ -114,7 +127,8 @@ void writeReturn(AST* ast, FILE* file) {
         align_size
     );
 
-    fprintf(file, "\tret %s %%%d\n", data_type_string, global_counter++); //!FIXME: assumed to be 1 tab
+    INSERT_TABS(tab_count, file);
+    fprintf(file, "ret %s %%%d\n", data_type_string, global_counter++); //!FIXME: assumed to be 1 tab
 
     return;
 }
@@ -124,18 +138,15 @@ void writeExpression(AST* ast, FILE* file, int tab_count) {
 
     assert(AST_MAX == 17 && "writeExpression() must handle all AST types");
 
-    for (int i = 0; i < tab_count; i++) {
-        fprintf(file, "\t");
-    }
-
     switch (ast->ast_type) {
 
-        case AST_VAR_DECLARATION    : writeVarDeclaration(ast, file);   break;
-        case AST_VAR_DEFINITION     : writeVarDefinition(ast, file);    break;
-        case AST_RETURN             : writeReturn(ast, file);           break;
+        case AST_VAR_DECLARATION    : writeVarDeclaration(ast, file, tab_count);   break;
+        case AST_VAR_DEFINITION     : writeVarDefinition(ast, file, tab_count);    break;
+        case AST_ASSIGNMENT         : writeAssignment(ast, file, tab_count);       break;
+        case AST_RETURN             : writeReturn(ast, file, tab_count);           break;
 
         default:
-            printf("ERROR_PLACEHOLDER\n");
+            printf("writeExpression() you dumbass\n");
             exit(ERROR_PLACEHOLDER);
             break;
     }
@@ -244,7 +255,7 @@ void writeProgram(AST* root, FILE* file) {
             case AST_VAR_DEFINITION         : writeGlobalVarDefinition(children[i], file);      break;
 
             default:
-                printf("ERROR_PLACEHOLDER\n");
+                printf("writeProgram() you dumbass\n");
                 exit(ERROR_PLACEHOLDER);
                 break;
         }
