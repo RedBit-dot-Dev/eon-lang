@@ -1,33 +1,28 @@
 #ifndef EON_LEXER_H
 #define EON_LEXER_H
 #include "token.h"
-#include <stdio.h>
 
 typedef struct _lexer {
-    char* src;
-    size_t src_size;
     char c;
+    char* src;
     unsigned int i;
     unsigned int line;
     unsigned int column;
+    unsigned int src_length;
 } Lexer;
 
-Lexer* createLexer(char* src);
-
-void lexerAdvance(Lexer* lexer);
-
-char lexerPeek(Lexer* lexer, int offset);
-
-void lexerSkipWhitespace(Lexer* lexer);
-
-Token* lexerAdvanceWith(Lexer* lexer, Token* token, int offset);
-
-Token* lexerAdvanceCurrent(Lexer* lexer, int type);
-
-Token* lexerParseId(Lexer* lexer);
-
-Token* lexerParseNumber(Lexer* lexer);
+Lexer* createLexer(char* src, unsigned int src_length);
 
 Token* lexerNextToken(Lexer* lexer);
+
+/*static*/ void advance(Lexer* lexer);
+
+/*static*/ Token* advanceAndReturn(Lexer* lexer, int token_type, int advances);
+
+/*static*/ void skipWhitespace(Lexer* lexer);
+
+/*static*/ Token* handleId(Lexer* lexer);
+
+/*static*/ Token* handleNumber(Lexer* lexer);
 
 #endif

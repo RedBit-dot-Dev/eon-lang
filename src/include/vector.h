@@ -1,6 +1,6 @@
 #ifndef EON_VECTOR_H
 #define EON_VECTOR_H
-#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct _vector {
     void** items;

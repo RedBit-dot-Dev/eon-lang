@@ -1,31 +1,32 @@
 #include "include/token.h"
+#include "include/error_codes.h"
 #include "include/arena.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+#include <assert.h>
 
 extern Arena* arena_main;
 
-Token* createToken(char* value, int type, int length, int line, int column) {
+Token* createToken(char* value, int length, unsigned int line, unsigned int column, int type) {
 
-    Token* token = (Token*) arenaPush(arena_main, sizeof(Token), true);
-    assert(token && "Could not allocate memory for token");
+    Token* token = (Token*) arenaPush(arena_main, sizeof(Token), false);
 
-    token->value = value;
-    token->type = type;
+    token->value = value; // string is pre-allocated on the arena in the lexing phase
     token->length = length;
     token->line = line;
     token->column = column;
+    token->type = type;
 
     return token;
 }
 
 int checkKeyword(Token* token) {
 
-    assert(TOKEN_MAX == 29 && "checkKeyword() must handle all token types");
+    assert(TOKEN_MAX == 29 && "checkKeyword() must handle all keywords");
 
     switch (token->length) {
+
         case 2:
             if (!strcmp(token->value, "fn")) return TOKEN_FN;
             if (!strcmp(token->value, "if")) return TOKEN_IF;
@@ -55,16 +56,17 @@ int checkKeyword(Token* token) {
 
         default:
             break;
+
     }
 
     return -1;
 }
 
-char* tokenIdToString(int token_id) {
+char* tokenTypeToString(int token_type) {
 
-    assert(TOKEN_MAX == 29 && "tokenIdToString() must handle all token types");
+    assert(TOKEN_MAX == 29 && "tokenTypeToString() must handle all token types");
 
-    switch (token_id) {
+    switch (token_type) {
 
         case TOKEN_ID               : return "TOKEN_ID";
         case TOKEN_INT_LITERAL      : return "TOKEN_INT_LITERAL";
@@ -86,29 +88,28 @@ char* tokenIdToString(int token_id) {
         case TOKEN_GREATERTHAN      : return "TOKEN_GREATERTHAN";
         case TOKEN_DATATYPE         : return "TOKEN_DATATYPE";
         case TOKEN_FN               : return "TOKEN_FN";
-        case TOKEN_RETURN           : return "TOKEN_RETURN";
-        case TOKEN_FOR              : return "TOKEN_FOR";
         case TOKEN_IF               : return "TOKEN_IF";
+        case TOKEN_FOR              : return "TOKEN_FOR";
+        case TOKEN_ELSE             : return "TOKEN_ELSE";
         case TOKEN_WHILE            : return "TOKEN_WHILE";
         case TOKEN_BREAK            : return "TOKEN_BREAK";
-        case TOKEN_CONTINUE         : return "TOKEN_CONTINUE";
         case TOKEN_CONST            : return "TOKEN_CONST";
-        case TOKEN_ELSE             : return "TOKEN_ELSE";
-        case TOKEN_EOF              : return "TOKEN_EOF"; // Just so that the compiler doesn't scream at me
-        case TOKEN_MAX              : return "TOKEN_MAX"; // Just so that the compiler doesn't scream at me
+        case TOKEN_RETURN           : return "TOKEN_RETURN";
+        case TOKEN_CONTINUE         : return "TOKEN_CONTINUE";
+        case TOKEN_EOF              : return "TOKEN_EOF";
+        case TOKEN_MAX              : break;
 
-        default:
-            break;
     }
 
-    return "INVALID_TOKEN";
+    printf("Token type unrecognized\n");
+    exit(ERROR_TOKEN_TYPE_UNRECOGNIZED);
+
+    return "ERROR";
 }
 
 void printToken(Token* token) {
 
-    char* type_string = tokenIdToString(token->type);
-
-    printf("Token: [%s] -> [%s]\n", token->value, type_string);
+    printf("[Token]: [%s] [%d] [%d] [%d] [%s]\n", token->value, token->length, token->line, token->column, tokenTypeToString(token->type));
 
     return;
 }

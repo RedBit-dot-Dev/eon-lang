@@ -1,14 +1,14 @@
-#include "include/types.h"
+#include "include/data_types.h"
+#include "include/error_codes.h"
 #include <stdio.h>
-#include <string.h>
-#include <assert.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 #include <ctype.h>
 
-// TODO: make this work with complex data types such as vectors and linked lists
-int tokenToDataType(const Token* token) {
+int checkDataType(const Token* token) {
 
-    assert(TYPE_MAX == 13 && "tokenToSimpleDataType() must handle all type values");
+    assert(TYPE_MAX == 13 && "checkDataType() must handle all type values");
 
     switch (token->length) {
 
@@ -66,9 +66,6 @@ int tokenToDataType(const Token* token) {
             break;
     }
 
-    //printf("Data type unknown: '%s'\n", token->value);
-    //exit(1);
-
     return -1;
 }
 
@@ -82,11 +79,11 @@ char* dataTypeToString(const int data_type) {
         case TYPE_i32       : return "i32";
         case TYPE_i64       : return "i64";
         case TYPE_i128      : return "i128";
-        case TYPE_u8        : return "i8";
-        case TYPE_u16       : return "i16";
-        case TYPE_u32       : return "i32";
-        case TYPE_u64       : return "i64";
-        case TYPE_u128      : return "i128";
+        case TYPE_u8        : return "i8";      // LLVM ir doesn't recognize unsingned
+        case TYPE_u16       : return "i16";     // LLVM ir doesn't recognize unsingned
+        case TYPE_u32       : return "i32";     // LLVM ir doesn't recognize unsingned
+        case TYPE_u64       : return "i64";     // LLVM ir doesn't recognize unsingned
+        case TYPE_u128      : return "i128";    // LLVM ir doesn't recognize unsingned
         case TYPE_FLOAT     : return "float";
         case TYPE_DOUBLE    : return "double";
         case TYPE_VOID      : return "void";
@@ -96,7 +93,7 @@ char* dataTypeToString(const int data_type) {
     }
 
     printf("Data type not recognized\n");
-    exit(1);
+    exit(ERROR_DATA_TYPE_UNRECOGNIZED);
 
-    return "well, that's awkward";
+    return "ERROR";
 }

@@ -1,19 +1,16 @@
 #include "include/parser.h"
-#include "include/types.h"
 #include "include/arena.h"
-#include "stdlib.h"
-#include <assert.h>
-#include <string.h>
+#include "include/data_types.h"
+#include "include/error_codes.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 extern Arena* arena_main;
-
-// TODO: make single literals forbidden
 
 Parser* createParser(Lexer* lexer) {
 
     Parser* parser = (Parser*) arenaPush(arena_main, sizeof(Parser), false);
-    assert(parser && "Could not allocate memory for the parser");
 
     parser->lexer = lexer;
     parser->token = lexerNextToken(parser->lexer);
@@ -21,242 +18,349 @@ Parser* createParser(Lexer* lexer) {
     return parser;
 }
 
-Token* parserEat(Parser* parser, int type) {
+void parserEat(Parser* parser, int token_type) {
 
-    Token* tok = parser->token; // just to shrink printf call
+    Token* token = parser->token; // just to shrink printf call
 
-    if (tok->type != type) {
+    if (token->type != token_type) {
 
         printf("[Parser]: Unexpected token: '%s' '%s' at %d:%d\n, was expecting '%s'", 
-            tok->value, 
-            tokenIdToString(tok->type), 
-            tok->line, tok->column, 
-            tokenIdToString(type)
+            token->value, 
+            tokenTypeToString(token->type), 
+            token->line, token->column, 
+            tokenTypeToString(token_type) // TODO: change this to make error message more comprehensible
         );
 
-        exit(1);
+        exit(ERROR_UNEXPECTED_TOKEN);
     }
 
     parser->token = lexerNextToken(parser->lexer);
-    return parser->token;
+
+    return;
 }
 
-// TODO: make this handle function calls
-AST* parseId(Parser* parser) {
+void parseParameters(Parser* parser, AST* parent) {
 
-    char* name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
-    assert(name && "Could not allocate memory for name string");
-    parserEat(parser, TOKEN_ID);
+    parserEat(parser, TOKEN_LPAREN);
 
-    // if it's an assignment, store the variable name, then store it's value as the expression of the rhs of the assignment
-    if (parser->token->type == TOKEN_EQUALS) {
-        parserEat(parser, TOKEN_EQUALS);
-        AST* ast = createAST(AST_ASSIGNMENT);
-        ast->name = name;
-        ast->value = parseExpression(parser);
-        return ast;
+    if (parser->token->type == TOKEN_RPAREN) {
+        parserEat(parser, TOKEN_RPAREN);
+        return;
     }
 
-    AST* ast = createAST(AST_VARIABLE);
-    ast->name = name;
-    parserEat(parser, TOKEN_SEMI);
+    parent->args_params = createVector(sizeof(AST*));
 
-    return ast;
+    //parsing the first parameter
+    AST* parem = createAST(AST_PARAMETER);
+
+    parem->data_type = checkDataType(parser->token);
+    parserEat(parser, TOKEN_DATATYPE);
+
+    parem->name = parser->token->value;
+    parserEat(parser, TOKEN_ID);
+
+    vectorPush(parent->args_params, parem);
+
+    // parsing the rest
+    while (parser->token->type != TOKEN_RPAREN) {
+
+        parserEat(parser, TOKEN_COMMA);
+
+        parem = createAST(AST_PARAMETER);
+
+        parem->data_type = checkDataType(parser->token);
+        parserEat(parser, TOKEN_DATATYPE);
+
+        parem->name = parser->token->value;
+        parserEat(parser, TOKEN_ID);
+
+        vectorPush(parent->args_params, parem);
+
+    }
+
+    parserEat(parser, TOKEN_RPAREN);
+
+    return;
 }
 
-// TODO: handle sum, subtraction, division etc.
 AST* parseIntLiteral(Parser* parser) {
 
     AST* ast = createAST(AST_INT_LITERAL);
-    ast->data_type = TYPE_i32; //! PLACEHOLDER?
+
     ast->literal_value = parser->token->value;
+    ast->line = parser->lexer->line;
+    ast->data_type = TYPE_i32; // Default int value
 
     parserEat(parser, TOKEN_INT_LITERAL);
-
     parserEat(parser, TOKEN_SEMI);
 
     return ast;
 }
 
-// TODO: make this compatible with complex data types such as vectors and linked lists
+AST* parseFloatLiteral(Parser* parser) {
+
+    AST* ast = createAST(AST_FLOAT_LITERAL);
+
+    ast->literal_value = parser->token->value;
+    ast->line = parser->lexer->line;
+    ast->data_type = TYPE_FLOAT; // Default float type
+
+    parserEat(parser, TOKEN_FLOAT_LITERAL);
+    parserEat(parser, TOKEN_SEMI);
+
+    return ast;
+}
+
+AST* parseCharLiteral(Parser* parser) {
+
+    AST* ast = createAST(AST_CHAR_LITERAL);
+
+    ast->literal_value = parser->token->value;
+    ast->line = parser->lexer->line;
+    ast->data_type = TYPE_i8; // Default char type
+
+    parserEat(parser, TOKEN_CHAR_LITERAL);
+    parserEat(parser, TOKEN_SEMI);
+
+    return ast;
+}
+
+AST* parseStringLiteral(Parser* parser) {
+
+    AST* ast = createAST(AST_STRING_LITERAL);
+
+    ast->literal_value = parser->token->value;
+    ast->line = parser->lexer->line;
+    ast->data_type = TYPE_i64; // Default string type // TODO: check this
+
+    parserEat(parser, TOKEN_STRING_LITERAL);
+    parserEat(parser, TOKEN_SEMI);
+
+    return ast;
+}
+
+AST* parseVar(Parser* parser) {
+
+    AST* ast = createAST(AST_VARIABLE);
+
+    ast->name = parser->token->value;
+    ast->line = parser->token->line;
+
+    parserEat(parser, TOKEN_ID);
+    parserEat(parser, TOKEN_SEMI);
+
+    return ast;
+}
+
+// TODO: make this
+AST* parseParenthesis(Parser* parser) {
+    return NULL;
+}
+
+AST* parseRHS(Parser* parser) {
+
+    assert(TOKEN_MAX == 29 && "parseRHS() must handle all token types");
+
+    switch (parser->token->type) {
+
+        case TOKEN_INT_LITERAL      : return parseIntLiteral(parser);
+        case TOKEN_FLOAT_LITERAL    : return parseFloatLiteral(parser);
+        case TOKEN_CHAR_LITERAL     : return parseCharLiteral(parser);
+        case TOKEN_STRING_LITERAL   : return parseStringLiteral(parser);
+        case TOKEN_ID               : return parseVar(parser);
+        case TOKEN_LPAREN           : return parseParenthesis(parser);
+
+        default:
+            break;
+    }
+
+    printf("[Parser]: Expression at %d:%d not supported in the RHS\n", parser->token->line, parser->token->column);
+    exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+
+    return NULL;
+}
+
 AST* parseDataType(Parser* parser) {
 
-    int data_type = tokenToDataType(parser->token);
+    int data_type = checkDataType(parser->token);
     parserEat(parser, TOKEN_DATATYPE);
 
-    char* variable_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
-    assert(variable_name && "Could not allocate memory for variable_name string");
-
+    char* var_name = parser->token->value;
     parserEat(parser, TOKEN_ID);
-
-    if (parser->token->type == TOKEN_EQUALS) {
-        parserEat(parser, TOKEN_EQUALS);
-        AST* ast = createAST(AST_VAR_DEFINITION);
-        ast->name = variable_name;
-        ast->data_type = data_type;
-        ast->value = parseExpression(parser);
-        return ast;
-    }
 
     AST* ast = createAST(AST_VAR_DECLARATION);
-    ast->name = variable_name;
+
     ast->data_type = data_type;
-    parserEat(parser, TOKEN_SEMI);
+    ast->name = var_name;
+    ast->line = parser->lexer->line;
 
-    return ast;
-}
-
-// This is used for expression order
-// TODO: actually make this work
-//! DO NOT use this for parsing for loops
-AST* parseParenthesis(Parser* parser) {
-
-    parserEat(parser, TOKEN_LPAREN);
-
-    AST* ast = createAST(AST_COMPOUND);
-
-    vectorPush(ast->children, parseExpression(parser));
-
-    while (parser->token->type == TOKEN_COMMA) {
-        parserEat(parser, TOKEN_COMMA);
-        vectorPush(ast->children, parseExpression(parser));
-    }
-
-    parserEat(parser, TOKEN_RPAREN);
-
-    return ast;
-}
-
-AST* parseSingleParameter(Parser* parser) {
-
-    int data_type = tokenToDataType(parser->token);
-    parserEat(parser, TOKEN_DATATYPE);
-
-    char* parameter_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
-    assert(parameter_name && "Could not allocate memory for parameter_name string");
-
-    parserEat(parser, TOKEN_ID);
-
-    AST* ast = createAST(AST_PARAMETER);
-    ast->data_type = data_type;
-    ast->name = parameter_name;
-
-    if (parser->token->type == TOKEN_EQUALS) {
-        parserEat(parser, TOKEN_EQUALS);
-        ast->value = parseExpression(parser);
-    }
-
-    return ast;
-}
-
-// This is usable for function parameters
-//! DO NOT use this for parsing for loops
-AST* parseFunctionParameters(Parser* parser) {
-
-    parserEat(parser, TOKEN_LPAREN);
-
-    AST* ast = createAST(AST_COMPOUND);
-
-    if (parser->token->type != TOKEN_RPAREN) {
-        vectorPush(ast->children, parseSingleParameter(parser));
-    
-        while (parser->token->type == TOKEN_COMMA) {
-            parserEat(parser, TOKEN_COMMA);
-            vectorPush(ast->children, parseSingleParameter(parser));
-        }
-    }
-
-    parserEat(parser, TOKEN_RPAREN);
-
-    return ast;
-}
-
-AST* parseBlock(Parser* parser) {
-
-    parserEat(parser, TOKEN_LCURLY);
-    AST* ast = createAST(AST_COMPOUND);
-
-    while (parser->token->type != TOKEN_RCURLY) {
-        vectorPush(ast->children, parseExpression(parser));
-    }
-
-    parserEat(parser, TOKEN_RCURLY);
-
-    return ast;
-}
-
-AST* parseFunction(Parser* parser) {
-
-    parserEat(parser, TOKEN_FN);
-
-    int return_type = tokenToDataType(parser->token);
-    parserEat(parser, TOKEN_DATATYPE);
-
-    char* function_name = arenaPushString(arena_main, parser->token->length + 1, parser->token->value);
-    assert(function_name && "Could not allocate memory for function_name string");
-
-    parserEat(parser, TOKEN_ID);
-
-    AST* ast = createAST(AST_FUNCTION_DECLARATION);
-    ast->name = function_name;
-    ast->data_type = return_type;
-    ast->args_params = parseFunctionParameters(parser); // Should parse all the arguments and be on the curly braces or semi
-
-    if (parser->token->type == TOKEN_LCURLY) {
-        ast->node_type = AST_FUNCTION_DEFINITION;
-        ast->value = parseBlock(parser);
+    if (parser->token->type == TOKEN_SEMI) {
+        parserEat(parser, TOKEN_SEMI);
         return ast;
     }
 
-    parserEat(parser, TOKEN_RPAREN);
+    ast->ast_type = AST_VAR_DEFINITION;
+    parserEat(parser, TOKEN_EQUALS);
+
+    ast->ast_value = parseRHS(parser);
 
     return ast;
+}
+
+AST* parseVarAssignment(Parser* parser) {
+
+    char* var_name = parser->token->value;
+    parserEat(parser, TOKEN_ID);
+
+    parserEat(parser, TOKEN_EQUALS);
+
+    AST* ast = createAST(AST_ASSIGNMENT);
+    ast->name = var_name;
+    ast->line = parser->lexer->line;
+    ast->ast_value = parseRHS(parser);
+
+    return ast;
+}
+
+// TODO: make this
+AST* parseIf(Parser* parser) {
+    return NULL;
+}
+
+// TODO: make this
+AST* parseWhile(Parser* parser) {
+    return NULL;
+}
+
+// TODO: make this
+AST* parseFor(Parser* parser) {
+    return NULL;
 }
 
 AST* parseReturn(Parser* parser) {
 
     AST* ast = createAST(AST_RETURN);
+
     parserEat(parser, TOKEN_RETURN);
 
-    if (parser->token->type != TOKEN_SEMI) {
-        ast->value = parseExpression(parser);
+    ast->line = parser->lexer->line;
+
+    if (parser->token->type == TOKEN_SEMI) {
+        ast->ast_value = createAST(AST_NOOP);
+        ast->ast_value->data_type = TYPE_VOID;
+        parserEat(parser, TOKEN_SEMI);
+        return ast;
     }
 
-    else {
-        parserEat(parser, TOKEN_SEMI);
-        ast->value = createAST(AST_NOOP);
-        ast->value->data_type = TYPE_VOID;
-    }
+    ast->ast_value = parseRHS(parser);
 
     return ast;
 }
 
-AST* parseExpression(Parser* parser) {
+AST* parseLHS(Parser* parser) {
 
-    assert(TOKEN_MAX == 29 && "parseExpression() must handle all token cases");
+    assert(TOKEN_MAX == 29 && "parseLHS() must handle all token types");
 
     switch (parser->token->type) {
 
-        case TOKEN_ID               : return parseId(parser);
-        case TOKEN_INT_LITERAL      : return parseIntLiteral(parser);
-        case TOKEN_DATATYPE         : return parseDataType(parser);
-        case TOKEN_LPAREN           : return parseParenthesis(parser);
-        case TOKEN_FN               : return parseFunction(parser);
-        case TOKEN_RETURN           : return parseReturn(parser);
+        case TOKEN_DATATYPE :   return parseDataType(parser);
+        case TOKEN_ID       :   return parseVarAssignment(parser);
+        case TOKEN_IF       :   return parseIf(parser);
+        case TOKEN_WHILE    :   return parseWhile(parser);
+        case TOKEN_FOR      :   return parseFor(parser);
+        case TOKEN_RETURN   :   return parseReturn(parser);
+
         default:
-        printf("[Parser]: Unexpected token: '%s' at %d:%d\n", parser->token->value, parser->token->line, parser->token->column);
-        exit(1);
+            break;
+
     }
 
+    printf("[Parser]: Expression at %d:%d not supported in the LHS\n", parser->token->line, parser->token->column);
+    exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+
+    return NULL;
 }
 
-AST* parseProgram(Parser* parser) {
+void parseFunctionBody(Parser* parser, AST* parent) {
 
-    AST* compound = createAST(AST_COMPOUND);
+    parserEat(parser, TOKEN_LCURLY);
 
-    while (parser->token->type != TOKEN_EOF) {
-        vectorPush(compound->children, parseExpression(parser));
+    if (parser->token->type == TOKEN_RCURLY) {
+        parserEat(parser, TOKEN_RCURLY);
+        return;
     }
 
-    return compound;
+    parent->children = createVector(sizeof(AST*));
+
+    while (parser->token->type != TOKEN_RCURLY) {
+        vectorPush(parent->children, parseLHS(parser));
+    }
+
+    parserEat(parser, TOKEN_RCURLY);
+
+    return;
+}
+
+// This is only called on the main scope
+AST* parseFunction(Parser* parser) {
+
+    parserEat(parser, TOKEN_FN);
+
+    int data_type = checkDataType(parser->token);
+    parserEat(parser, TOKEN_DATATYPE);
+
+    char* function_name = parser->token->value;
+    parserEat(parser, TOKEN_ID);
+
+    AST* ast = createAST(AST_FUNCTION_DECLARATION);
+
+    ast->data_type = data_type;
+    ast->name = function_name;
+    ast->line = parser->lexer->line;
+
+    parseParameters(parser, ast);
+
+    if (parser->token->type == TOKEN_SEMI) {
+        parserEat(parser, TOKEN_SEMI);
+        return ast;
+    }
+
+    ast->ast_type = AST_FUNCTION_DEFINITION;
+    parseFunctionBody(parser, ast);
+
+    return ast;
+}
+
+// This is only called on the main scope
+AST* parseGlobalScope(Parser* parser) {
+
+    assert(AST_MAX == 17 && "parseGlobalScope() must handle all AST types");
+
+    switch (parser->token->type) {
+
+        case TOKEN_FN: return parseFunction(parser); 
+        case TOKEN_DATATYPE: return parseDataType(parser);
+        case TOKEN_ID: return parseVarAssignment(parser);
+
+        default:
+            break;
+    }
+    printf("%d", parser->token->type);
+    printf("[Parser]: Expression at %d:%d not supported in the main scope\n", parser->token->line, parser->token->column);
+    exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+
+    return NULL;
+}
+
+// This is only called on the root AST node
+AST* parseProgram(Parser* parser) {
+
+    AST* root = createAST(AST_COMPOUND);
+    root->children = createVector(sizeof(AST*));
+
+    while (parser->token->type != TOKEN_EOF) {
+        vectorPush(root->children, parseGlobalScope(parser));
+    }
+
+    return root;
 }

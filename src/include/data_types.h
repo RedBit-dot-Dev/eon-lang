@@ -1,8 +1,8 @@
-#ifndef EON_TYPES_H
-#define EON_TYPES_H
+#ifndef EON_DATA_TYPES_H
+#define EON_DATA_TYPES_H
 #include "token.h"
 
-enum _data_types {
+enum _data_type {
     TYPE_i8, // defined char
     TYPE_i16,
     TYPE_i32, //defined int
@@ -19,7 +19,7 @@ enum _data_types {
     TYPE_MAX,
 };
 
-int tokenToDataType(const Token* token);
+int checkDataType(const Token* token);
 
 char* dataTypeToString(const int data_type);
 

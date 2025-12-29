@@ -1,7 +1,7 @@
 #ifndef EON_TOKEN_H
 #define EON_TOKEN_H
 
-enum _token_types{
+enum _token_type {
     TOKEN_ID,
     TOKEN_INT_LITERAL,
     TOKEN_FLOAT_LITERAL,
@@ -23,14 +23,14 @@ enum _token_types{
     TOKEN_DATATYPE,
     // KEYWORDS
     TOKEN_FN,
-    TOKEN_RETURN,
-    TOKEN_FOR,
     TOKEN_IF,
+    TOKEN_FOR,
+    TOKEN_ELSE,
     TOKEN_WHILE,
     TOKEN_BREAK,
-    TOKEN_CONTINUE,
     TOKEN_CONST,
-    TOKEN_ELSE,
+    TOKEN_RETURN,
+    TOKEN_CONTINUE,
     // For control
     TOKEN_EOF,
     TOKEN_MAX,
@@ -38,17 +38,17 @@ enum _token_types{
 
 typedef struct _token {
     char* value;
-    enum _token_types type;
     int length;
     unsigned int line;
     unsigned int column;
+    enum _token_type type;
 } Token;
 
-Token* createToken(char* value, int type, int length, int line, int column);
+Token* createToken(char* value, int length, unsigned int line, unsigned int column, int type);
 
 int checkKeyword(Token* token);
 
-char* tokenIdToString(int token_id);
+char* tokenTypeToString(int token_type);
 
 void printToken(Token* token);
 

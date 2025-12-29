@@ -1,7 +1,7 @@
 #ifndef EON_PARSER_H
 #define EON_PARSER_H
-#include "lexer.h"
 #include "AST.h"
+#include "lexer.h"
 
 typedef struct _parser {
     Lexer* lexer;
@@ -10,27 +10,43 @@ typedef struct _parser {
 
 Parser* createParser(Lexer* lexer);
 
-Token* parserEat(Parser* parser, int type);
+void parserEat(Parser* parser, int token_type);
 
-AST* parseId(Parser* parser);
+void parseParameters(Parser* parser, AST* parent);
+
+void parseFunctionBody(Parser* parser, AST* parent);
 
 AST* parseIntLiteral(Parser* parser);
 
-AST* parseDataType(Parser* parser);
+AST* parseFloatLiteral(Parser* parser);
+
+AST* parseCharLiteral(Parser* parser);
+
+AST* parseStringLiteral(Parser* parser);
+
+AST* parseVar(Parser* parser);
 
 AST* parseParenthesis(Parser* parser);
 
-AST* parseSingleParameter(Parser* parser);
+AST* parseDataType(Parser* parser);
 
-AST* parseFunctionParameters(Parser* parser);
-
-AST* parseBlock(Parser* parser);
-
-AST* parseFunction(Parser* parser);
+AST* parseVarAssignment(Parser* parser);
 
 AST* parseReturn(Parser* parser);
 
-AST* parseExpression(Parser* parser);
+AST* parseRHS(Parser* parser);
+
+AST* parseIf(Parser* parser);
+
+AST* parseWhile(Parser* parser);
+
+AST* parseFor(Parser* parser);
+
+AST* parseLHS(Parser* parser);
+
+AST* parseFunction(Parser* parser);
+
+AST* parseGlobalScope(Parser* parser);
 
 AST* parseProgram(Parser* parser);
 

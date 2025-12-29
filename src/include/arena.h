@@ -2,31 +2,25 @@
 #define EON_ARENA_H
 #include <stdint.h>
 #include <stdbool.h>
-#include "macros.h"
+#include <stdio.h>
+
+#define KiB(n) ((uint64_t)(n) << 10)
+#define MiB(n) ((uint64_t)(n) << 20)
+#define GiB(n) ((uint64_t)(n) << 30)
 
 typedef struct _arena {
-    void* memory;
-    void* pos;
+    uint64_t offset;
     uint64_t capacity;
-    uint64_t int_pos;
+    char* memory;
+    char* pos;
 } Arena;
 
 Arena* createArena(uint64_t capacity);
-void* arenaPush(Arena* arena, int size, bool zero_out);
+
+char* arenaPush(Arena* arena, size_t size, bool zero_out);
+
 char* arenaPushString(Arena* arena, int size, char* string);
+
 void arenaFree(Arena* arena);
-
-/* typedef struct _arena {
-    uint64_t capacity;
-    uint64_t pos;
-} Arena;
-
-Arena* createArena(uint64_t capacity);
-
-void* arenaPush(Arena* arena, int size, bool zero_out);
-
-char* arenaPushString(Arena* arena, int size, char* string);
-
-void arenaFree(Arena* arena); */
 
 #endif

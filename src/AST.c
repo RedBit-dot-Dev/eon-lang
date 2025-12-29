@@ -1,21 +1,22 @@
 #include "include/AST.h"
-#include <stdlib.h>
-#include <assert.h>
+#include "include/arena.h"
 
-AST* createAST(int type) {
+extern Arena* arena_main;
 
-    AST* ast = (AST*) malloc(sizeof(AST));
-    assert(ast && "Could not allocate memory for the AST");
+// TODO: create a special allocator for ast nodes so they can be fully freed easily
+AST* createAST(int ast_type) {
 
+    AST* ast = (AST*) arenaPush(arena_main, sizeof(AST), false);
+
+    ast->ast_type = ast_type;
+    ast->data_type = -1;
+    ast->line = -1;
     ast->name = NULL;
     ast->literal_value = NULL;
+    ast->ast_value = NULL;
+    ast->args_params = NULL;    
     ast->children = NULL;
-    ast->value = NULL;
-    ast->args_params = NULL;
-    ast->node_type = type;
-    ast->data_type = -1;
-
-    if (type == AST_COMPOUND) ast->children = createVector(sizeof(AST*));
+    ast->scope = NULL;
 
     return ast;
 }

@@ -1,9 +1,10 @@
 #ifndef EON_AST_H
 #define EON_AST_H
+#include "data_types.h"
 #include "vector.h"
-#include "types.h"
+#include "symbol_table.h"
 
-enum _ast_types{
+enum _ast_type {
     AST_INT_LITERAL,
     AST_FLOAT_LITERAL,
     AST_CHAR_LITERAL,
@@ -25,15 +26,17 @@ enum _ast_types{
 };
 
 typedef struct _ast {
+    enum _ast_type ast_type;
+    enum _data_type data_type;
+    unsigned int line;
     char* name;
     char* literal_value;
+    struct _ast* ast_value;
+    Vector* args_params;
     Vector* children;
-    struct _ast* value;
-    struct _ast* args_params;
-    enum _ast_types node_type;
-    enum _data_types data_type;
+    Symbol_Table* scope;
 } AST;
 
-AST* createAST(int type);
+AST* createAST(int ast_type);
 
 #endif
