@@ -79,13 +79,15 @@ void analyseVarDefinition(AST* ast) {
             }
 
             insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, ast->line, -1, NULL);
-            return;
 
-            break;
+            return;
 
         default:
             break;
     }
+
+    // This makes literals get their correct data type instead of defaulting to something like i32
+    ast->ast_value->data_type = ast->data_type;
 
     insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, ast->line, -1, ast->ast_value->literal_value);
 
@@ -159,11 +161,14 @@ void analyseAssignment(AST* ast) {
             // This is here so that all mentions of the variable also know it's data type, otherwise it's unknown at write time
             ast->ast_value->data_type = var_rhs->data_type;
 
-            break;
+            return;
 
         default:
             break;
     }
+
+    // This makes literals get their correct data type instead of defaulting to something like i32
+    ast->ast_value->data_type = ast->data_type;
 
     return;
 }

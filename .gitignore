@@ -4,3 +4,4 @@ eonc
 *.o
 *.a
 src/*.o
+TODO.md

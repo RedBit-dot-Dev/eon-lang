@@ -24,6 +24,55 @@ Lexer* createLexer(char* src, unsigned int src_length) {
     return lexer;
 }
 
+char transcribeChar(char c) {
+
+    switch (c) {
+
+        case 't': return '\t';
+        case 'v': return '\v';
+        case 'f': return '\f';
+        case 'n': return '\n';
+        case '0': return '\0';
+        case 'a': return '\a';
+        case 'b': return '\b';
+        case 'r': return '\r';
+        case '\'': return '\'';
+        case '\"': return '\"';
+        case '\\': return '\\';
+
+        default:
+            break;
+    }
+
+    printf("transcribeChar(): char not recognized\n");
+    exit(ERROR_UNEXPECTED_CHARACTER);
+    return '\0';
+}
+
+Token* handleChar(Lexer* lexer) {
+
+    advance(lexer); // pass '
+
+    char* value = arenaPush(arena_main, 2, false);
+
+    if (lexer->c == '\\') {
+        advance(lexer); // pass '\'
+        value[0] = transcribeChar(lexer->c);
+    }
+
+    else {
+        value[0] = lexer->c;
+    }
+
+    value[1] = '\0';
+
+    advance(lexer); // pass value
+
+    advance(lexer); // pass '
+
+    return createToken(value, 1, lexer->line, lexer->column, TOKEN_CHAR_LITERAL);
+}
+
 Token* lexerNextToken(Lexer* lexer) {
 
     assert(TOKEN_MAX == 29 && "lexerNextToken() must account for all token types");
@@ -38,19 +87,21 @@ Token* lexerNextToken(Lexer* lexer) {
 
         switch (lexer->c) {
 
-            case '=': return advanceAndReturn(lexer, TOKEN_EQUALS,      1);
-            case '(': return advanceAndReturn(lexer, TOKEN_LPAREN,      1);
-            case ')': return advanceAndReturn(lexer, TOKEN_RPAREN,      1);
-            case '{': return advanceAndReturn(lexer, TOKEN_LCURLY,      1);
-            case '}': return advanceAndReturn(lexer, TOKEN_RCURLY,      1);
-            case '[': return advanceAndReturn(lexer, TOKEN_LSQUARE,     1);
-            case ']': return advanceAndReturn(lexer, TOKEN_RSQUARE,     1);
-            case ':': return advanceAndReturn(lexer, TOKEN_COLON,       1);
-            case ',': return advanceAndReturn(lexer, TOKEN_COMMA,       1);
-            case ';': return advanceAndReturn(lexer, TOKEN_SEMI,        1);
-            case '<': return advanceAndReturn(lexer, TOKEN_LESSTHAN,    1);
-            case '>': return advanceAndReturn(lexer, TOKEN_GREATERTHAN, 1);
-            case 0  : break; // Edge cases
+            case '\'':  return handleChar(lexer);
+
+            case '=':   return advanceAndReturn(lexer, TOKEN_EQUALS,      1);
+            case '(':   return advanceAndReturn(lexer, TOKEN_LPAREN,      1);
+            case ')':   return advanceAndReturn(lexer, TOKEN_RPAREN,      1);
+            case '{':   return advanceAndReturn(lexer, TOKEN_LCURLY,      1);
+            case '}':   return advanceAndReturn(lexer, TOKEN_RCURLY,      1);
+            case '[':   return advanceAndReturn(lexer, TOKEN_LSQUARE,     1);
+            case ']':   return advanceAndReturn(lexer, TOKEN_RSQUARE,     1);
+            case ':':   return advanceAndReturn(lexer, TOKEN_COLON,       1);
+            case ',':   return advanceAndReturn(lexer, TOKEN_COMMA,       1);
+            case ';':   return advanceAndReturn(lexer, TOKEN_SEMI,        1);
+            case '<':   return advanceAndReturn(lexer, TOKEN_LESSTHAN,    1);
+            case '>':   return advanceAndReturn(lexer, TOKEN_GREATERTHAN, 1);
+            case 0  :   break; // Edge cases
 
             default:
                 printf("[Lexer] Unexpected character '%c' at %d:%d\n", lexer->c, lexer->line, lexer->column);
@@ -63,7 +114,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return createToken(0, 0, lexer->line, lexer->column, TOKEN_EOF);
 }
 
-/*static*/ void advance(Lexer* lexer) {
+void advance(Lexer* lexer) {
 
     if (lexer->i < lexer->src_length && lexer->c != '\0') {
         lexer->i++;
@@ -74,7 +125,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return;
 }
 
-/*static*/ Token* advanceAndReturn(Lexer* lexer, int token_type, int advances) {
+Token* advanceAndReturn(Lexer* lexer, int token_type, int advances) {
 
     char* string = arenaPush(arena_main, 2, false); 
 
@@ -90,7 +141,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return token;
 }
 
-/*static*/ void skipWhitespace(Lexer* lexer) {
+void skipWhitespace(Lexer* lexer) {
 
     while (lexer->c == '\r' || lexer->c == '\n' || lexer->c == ' ' || lexer->c == '\t') {
         if (lexer->c == '\n') {
@@ -103,7 +154,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return;
 }
 
-/*static*/ Token* handleId(Lexer* lexer) {
+Token* handleId(Lexer* lexer) {
 
     unsigned int beg = lexer->i;
 
@@ -141,7 +192,7 @@ Token* lexerNextToken(Lexer* lexer) {
     return token;
 }
 
-/*static*/ Token* handleNumber(Lexer* lexer) {
+Token* handleNumber(Lexer* lexer) {
 
     bool found_point = false;
 

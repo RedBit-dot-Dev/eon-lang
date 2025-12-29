@@ -94,7 +94,7 @@ void writeAssignment(AST* ast, FILE* file, int tab_count) {
         }
 
         INSERT_TABS(tab_count, file);
-        fprintf(file, "store %s %%%d, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+        fprintf(file, "store %s %%%d, %s* %%%s\n",
             data_type_string,
             global_counter++,
             data_type_string,
@@ -103,10 +103,21 @@ void writeAssignment(AST* ast, FILE* file, int tab_count) {
 
     }
 
+    else if (ast->ast_value->ast_type == AST_CHAR_LITERAL) {
+
+        INSERT_TABS(tab_count, file);
+        fprintf(file, "store %s %d, %s* %%%s\n",
+            data_type_string,
+            ast->ast_value->literal_value[0],
+            data_type_string,
+            ast->name
+        );
+    }
+
     else {
 
         INSERT_TABS(tab_count, file);
-        fprintf(file, "store %s %s, %s* %%%s\n", //!FIXME: assumed to be 1 tab
+        fprintf(file, "store %s %s, %s* %%%s\n",
             data_type_string,
             ast->ast_value->literal_value,
             data_type_string,
@@ -115,6 +126,7 @@ void writeAssignment(AST* ast, FILE* file, int tab_count) {
 
     }
 
+    return;
 }
 
 void writeReturn(AST* ast, FILE* file, int tab_count) {
@@ -145,7 +157,7 @@ void writeReturn(AST* ast, FILE* file, int tab_count) {
     );
 
     INSERT_TABS(tab_count, file);
-    fprintf(file, "ret %s %%%d\n", data_type_string, global_counter++); //!FIXME: assumed to be 1 tab
+    fprintf(file, "ret %s %%%d\n", data_type_string, global_counter++);
 
     return;
 }

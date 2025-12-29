@@ -1,0 +1,66 @@
+// I still don't exactly know how I wanna do pointers, semantic wise
+
+import "lib"
+import "path/to/another_lib"
+import io // print() and such
+
+fn int foo();
+private fn bool bar(i128 big_num, f32 f); // Cannot be imported, only used by functions from this file
+
+fn int main() {
+
+    i8 a;
+    i16 b;
+    i32 c;
+    i64 d;
+    i128 e;
+
+    u8 f;
+    u16 g;
+    u32 h;
+    u64 i;
+    u128 j;
+
+    f32 k;
+    f64 l;
+
+    byte m; //u8
+    bool n; //u8
+    char o; //i8
+    int p; //i32
+    float q; //f32
+    double r; //f64
+
+    int var = 4;
+    int another_var;
+    another_var = var;
+    var = 3;
+
+    print("var: {}\n", var);
+
+    print("another_var: {another_var}\n"); // same as print("another_var: {}\n", another_var);
+
+    float var_f = 4.90;
+
+    print("var_f: {.2}", var_f); // prints var_f with 2 decimal places
+
+    return var;
+}
+
+class Animal {
+
+    public string name;
+    public int age;
+
+    // constructor
+    public fn Animal(string name, int age) {
+        self.name = name;
+        self.age = age;
+    }
+
+    // All things inside classes are private by default
+    fn saySomething() {
+        print("Hey\n");
+    }
+
+}

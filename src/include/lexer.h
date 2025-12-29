@@ -15,14 +15,18 @@ Lexer* createLexer(char* src, unsigned int src_length);
 
 Token* lexerNextToken(Lexer* lexer);
 
-/*static*/ void advance(Lexer* lexer);
+void advance(Lexer* lexer);
 
-/*static*/ Token* advanceAndReturn(Lexer* lexer, int token_type, int advances);
+Token* advanceAndReturn(Lexer* lexer, int token_type, int advances);
 
-/*static*/ void skipWhitespace(Lexer* lexer);
+void skipWhitespace(Lexer* lexer);
 
-/*static*/ Token* handleId(Lexer* lexer);
+char transcribeChar(char str);
 
-/*static*/ Token* handleNumber(Lexer* lexer);
+Token* handleChar(Lexer* lexer);
+
+Token* handleId(Lexer* lexer);
+
+Token* handleNumber(Lexer* lexer);
 
 #endif

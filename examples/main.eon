@@ -1,9 +1,7 @@
 int global = 3;
 
-fn int main() {
-    int local = 15;
-
-    local = global;
+fn char main() {
+    char local = '\n';
 
     return local;
 }
