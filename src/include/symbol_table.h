@@ -56,6 +56,8 @@ Symbol_Node* searchScope(Symbol_Table* s_table, char* name);
 
 Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name);
 
+bool isVarGlobal(Symbol_Table* s_table, char* name);
+
 Symbol_Hash_Node* createSymbolHashNode(char* key, Symbol_Node* symbol_node);
 
 Symbol_Hash_Table* createSymbolHashTable();

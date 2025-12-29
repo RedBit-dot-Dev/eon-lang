@@ -21,7 +21,7 @@ Vector* createVector(size_t item_byte_size) {
 void vectorPush(Vector* vector, void* item) {
 
     if (!vector->used) {
-        vector->items = calloc(1, vector->item_byte_size);
+        vector->items = calloc(1, vector->item_byte_size * sizeof(void*));
         if (!vector->items) {
             printf("Insufficient memory to allocate vector items array\n");
             exit(ERROR_INSUFFICIENT_MEMORY_RAM);
@@ -30,7 +30,7 @@ void vectorPush(Vector* vector, void* item) {
 
     else if (vector->used > vector->capacity - 1) {
         vector->capacity *= 2;
-        vector->items = realloc(vector->items, (vector->item_byte_size * vector->capacity));
+        vector->items = realloc(vector->items, (sizeof(void*) * vector->item_byte_size * vector->capacity));
         if (!vector->items) {
             printf("Insufficient memory to allocate vector items array\n");
             exit(ERROR_INSUFFICIENT_MEMORY_RAM);

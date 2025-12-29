@@ -28,7 +28,7 @@ Token* lexerNextToken(Lexer* lexer) {
 
     assert(TOKEN_MAX == 29 && "lexerNextToken() must account for all token types");
 
-    while (lexer->c != '\0') {
+    while (lexer->c != 0) {
 
         if (lexer->c == '\r' || lexer->c == '\n' || lexer->c == ' ' || lexer->c == '\t') skipWhitespace(lexer);
 
@@ -50,6 +50,7 @@ Token* lexerNextToken(Lexer* lexer) {
             case ';': return advanceAndReturn(lexer, TOKEN_SEMI,        1);
             case '<': return advanceAndReturn(lexer, TOKEN_LESSTHAN,    1);
             case '>': return advanceAndReturn(lexer, TOKEN_GREATERTHAN, 1);
+            case 0  : break; // Edge cases
 
             default:
                 printf("[Lexer] Unexpected character '%c' at %d:%d\n", lexer->c, lexer->line, lexer->column);
@@ -114,8 +115,9 @@ Token* lexerNextToken(Lexer* lexer) {
 
     unsigned int length = end - beg;
 
+    
     char* id = arenaPush(arena_main, length + 1, false);
-
+    
     memcpy(id, lexer->src + beg, length);
 
     id[length] = '\0';

@@ -156,6 +156,9 @@ void analyseAssignment(AST* ast) {
                 exit(ERROR_RETURN_TYPE_MISMATCH);
             }
 
+            // This is here so that all mentions of the variable also know it's data type, otherwise it's unknown at write time
+            ast->ast_value->data_type = var_rhs->data_type;
+
             break;
 
         default:

@@ -205,6 +205,29 @@ Symbol_Node* searchSymbolNode(Symbol_Table* s_table, char* name) {
     return result;
 }
 
+// Assumes the variable exists in the provided scope or higher
+bool isVarGlobal(Symbol_Table* s_table, char* name) {
+
+    Symbol_Table* scope_to_search = s_table;
+    Symbol_Node* result = NULL;
+
+    while (scope_to_search != NULL) {
+
+        result = searchScope(scope_to_search, name);
+
+        if (result != NULL) break;
+
+        scope_to_search = scope_to_search->parent;
+
+    }
+
+    if (scope_to_search->parent == NULL) {
+        return true;
+    }
+
+    return false;
+}
+
 Symbol_Hash_Node* createSymbolHashNode(char* key, Symbol_Node* symbol_node) {
 
     Symbol_Hash_Node* hn = (Symbol_Hash_Node*) malloc(sizeof(Symbol_Hash_Node));

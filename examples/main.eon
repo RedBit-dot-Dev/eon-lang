@@ -1,7 +1,9 @@
 int global = 3;
 
-fn int main(i32 a, bool b) {
-    int local = 5;
-    local = 1;
+fn int main() {
+    int local = 15;
+
+    local = global;
+
     return local;
 }

@@ -36,12 +36,6 @@ AST* parseReturn(Parser* parser);
 
 AST* parseRHS(Parser* parser);
 
-AST* parseIf(Parser* parser);
-
-AST* parseWhile(Parser* parser);
-
-AST* parseFor(Parser* parser);
-
 AST* parseLHS(Parser* parser);
 
 AST* parseFunction(Parser* parser);

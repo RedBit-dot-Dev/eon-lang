@@ -68,13 +68,30 @@ void writeAssignment(AST* ast, FILE* file, int tab_count) {
     if (ast->ast_value->ast_type == AST_VARIABLE) {
 
         INSERT_TABS(tab_count, file);
-        fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
-            global_counter,
-            data_type_string,
-            data_type_string,
-            ast->ast_value->name,
-            align_size
-        );
+
+        if (isVarGlobal(ast->scope, ast->ast_value->name)) {
+
+            fprintf(file, "%%%d = load %s, %s* @%s, align %d\n",
+                global_counter,
+                data_type_string,
+                data_type_string,
+                ast->ast_value->name,
+                align_size
+            );
+
+        }
+
+        else {
+
+            fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
+                global_counter,
+                data_type_string,
+                data_type_string,
+                ast->ast_value->name,
+                align_size
+            );
+
+        }
 
         INSERT_TABS(tab_count, file);
         fprintf(file, "store %s %%%d, %s* %%%s\n", //!FIXME: assumed to be 1 tab

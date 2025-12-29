@@ -222,21 +222,6 @@ AST* parseVarAssignment(Parser* parser) {
     return ast;
 }
 
-// TODO: make this
-AST* parseIf(Parser* parser) {
-    return NULL;
-}
-
-// TODO: make this
-AST* parseWhile(Parser* parser) {
-    return NULL;
-}
-
-// TODO: make this
-AST* parseFor(Parser* parser) {
-    return NULL;
-}
-
 AST* parseReturn(Parser* parser) {
 
     AST* ast = createAST(AST_RETURN);
@@ -265,9 +250,6 @@ AST* parseLHS(Parser* parser) {
 
         case TOKEN_DATATYPE :   return parseDataType(parser);
         case TOKEN_ID       :   return parseVarAssignment(parser);
-        case TOKEN_IF       :   return parseIf(parser);
-        case TOKEN_WHILE    :   return parseWhile(parser);
-        case TOKEN_FOR      :   return parseFor(parser);
         case TOKEN_RETURN   :   return parseReturn(parser);
 
         default:
@@ -345,7 +327,7 @@ AST* parseGlobalScope(Parser* parser) {
         default:
             break;
     }
-    printf("%d", parser->token->type);
+
     printf("[Parser]: Expression at %d:%d not supported in the main scope\n", parser->token->line, parser->token->column);
     exit(ERROR_EXPRESSION_NOT_SUPPORTED);
 
