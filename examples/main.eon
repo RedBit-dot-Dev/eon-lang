@@ -1,7 +1,5 @@
-int global = 3;
-
-fn char main() {
-    char local = '\n';
-
+fn int main() {
+    int local;
+    local = 16;
     return local;
 }

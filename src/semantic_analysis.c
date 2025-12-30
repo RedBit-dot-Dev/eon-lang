@@ -168,7 +168,7 @@ void analyseAssignment(AST* ast) {
     }
 
     // This makes literals get their correct data type instead of defaulting to something like i32
-    ast->ast_value->data_type = ast->data_type;
+    ast->ast_value->data_type = var_lhs->data_type;
 
     return;
 }
