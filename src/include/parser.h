@@ -34,6 +34,10 @@ AST* parseVarAssignment(Parser* parser);
 
 AST* parseReturn(Parser* parser);
 
+AST* parseBinaryOp(Parser* parser, int op_type);
+
+AST* parseTerm(Parser* parser);
+
 AST* parseRHS(Parser* parser);
 
 AST* parseLHS(Parser* parser);

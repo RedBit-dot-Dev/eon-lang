@@ -20,20 +20,29 @@ enum _ast_type {
     AST_VAR_DECLARATION, // int a;
     AST_VAR_DEFINITION, // int a = 3;
     AST_VARIABLE,
-    AST_STATEMENT,
+    AST_BIOP,
     AST_NOOP, // Sinalizes the AST is "null"
     AST_MAX,
 };
 
 typedef struct _ast {
+
     enum _ast_type ast_type;
     enum _data_type data_type;
+
     unsigned int line;
+    unsigned int precedence_value;
+
     char* name;
     char* literal_value;
+
     struct _ast* ast_value;
-    Vector* args_params;
-    Vector* children;
+    struct _ast* left;      // Only used for arithmetic
+    struct _ast* right;     // Only used for arithmetic
+
+    Vector* args_params;    // Only used for functions
+    Vector* children;       // Only used for scopes (fn def, for, while etc.)
+
     Symbol_Table* scope;
 } AST;
 

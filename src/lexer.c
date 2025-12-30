@@ -75,7 +75,7 @@ Token* handleChar(Lexer* lexer) {
 
 Token* lexerNextToken(Lexer* lexer) {
 
-    assert(TOKEN_MAX == 29 && "lexerNextToken() must account for all token types");
+    assert(TOKEN_MAX == 33 && "lexerNextToken() must account for all token types");
 
     while (lexer->c != 0) {
 
@@ -89,18 +89,22 @@ Token* lexerNextToken(Lexer* lexer) {
 
             case '\'':  return handleChar(lexer);
 
-            case '=':   return advanceAndReturn(lexer, TOKEN_EQUALS,      1);
-            case '(':   return advanceAndReturn(lexer, TOKEN_LPAREN,      1);
-            case ')':   return advanceAndReturn(lexer, TOKEN_RPAREN,      1);
-            case '{':   return advanceAndReturn(lexer, TOKEN_LCURLY,      1);
-            case '}':   return advanceAndReturn(lexer, TOKEN_RCURLY,      1);
-            case '[':   return advanceAndReturn(lexer, TOKEN_LSQUARE,     1);
-            case ']':   return advanceAndReturn(lexer, TOKEN_RSQUARE,     1);
-            case ':':   return advanceAndReturn(lexer, TOKEN_COLON,       1);
-            case ',':   return advanceAndReturn(lexer, TOKEN_COMMA,       1);
-            case ';':   return advanceAndReturn(lexer, TOKEN_SEMI,        1);
-            case '<':   return advanceAndReturn(lexer, TOKEN_LESSTHAN,    1);
-            case '>':   return advanceAndReturn(lexer, TOKEN_GREATERTHAN, 1);
+            case '=':   return advanceAndReturn(lexer, TOKEN_EQUALS,            1);
+            case '(':   return advanceAndReturn(lexer, TOKEN_LPAREN,            1);
+            case ')':   return advanceAndReturn(lexer, TOKEN_RPAREN,            1);
+            case '{':   return advanceAndReturn(lexer, TOKEN_LCURLY,            1);
+            case '}':   return advanceAndReturn(lexer, TOKEN_RCURLY,            1);
+            case '[':   return advanceAndReturn(lexer, TOKEN_LSQUARE,           1);
+            case ']':   return advanceAndReturn(lexer, TOKEN_RSQUARE,           1);
+            case ':':   return advanceAndReturn(lexer, TOKEN_COLON,             1);
+            case ',':   return advanceAndReturn(lexer, TOKEN_COMMA,             1);
+            case ';':   return advanceAndReturn(lexer, TOKEN_SEMI,              1);
+            case '<':   return advanceAndReturn(lexer, TOKEN_LESSTHAN,          1);
+            case '>':   return advanceAndReturn(lexer, TOKEN_GREATERTHAN,       1);
+            case '+':   return advanceAndReturn(lexer, TOKEN_ADDITION,          1);
+            case '-':   return advanceAndReturn(lexer, TOKEN_SUBTRACTION,       1);
+            case '/':   return advanceAndReturn(lexer, TOKEN_DIVISION,          1);
+            case '*':   return advanceAndReturn(lexer, TOKEN_MULTIPLICATION,    1);
             case 0  :   break; // Edge cases
 
             default:

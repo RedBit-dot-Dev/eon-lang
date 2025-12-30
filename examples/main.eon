@@ -1,5 +1,5 @@
 fn int main() {
     int local;
-    local = 16;
+    local = 2 + 4 * 8;
     return local;
 }

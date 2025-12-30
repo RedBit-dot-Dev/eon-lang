@@ -8,6 +8,8 @@ void writeVarDeclaration(AST* ast, FILE* file, int tab_count);
 
 void writeVarDefinition(AST* ast, FILE* file, int tab_count);
 
+int writeArithmetic(AST* ast, FILE* file, int tab_count);
+
 void writeAssignment(AST* ast, FILE* file, int tab_count);
 
 void writeReturn(AST* ast, FILE* file, int tab_count);

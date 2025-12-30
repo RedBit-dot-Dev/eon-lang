@@ -2,11 +2,16 @@
 #define EON_TOKEN_H
 
 enum _token_type {
+
+    // Identifiers
     TOKEN_ID,
+    TOKEN_DATATYPE,
     TOKEN_INT_LITERAL,
     TOKEN_FLOAT_LITERAL,
     TOKEN_CHAR_LITERAL,
     TOKEN_STRING_LITERAL,
+
+    // Syntax (misc)
     TOKEN_EQUALS,
     TOKEN_TWOEQUALS,
     TOKEN_LPAREN,
@@ -20,8 +25,14 @@ enum _token_type {
     TOKEN_SEMI,
     TOKEN_LESSTHAN,
     TOKEN_GREATERTHAN,
-    TOKEN_DATATYPE,
-    // KEYWORDS
+
+    // Arithmetic
+    TOKEN_ADDITION,
+    TOKEN_SUBTRACTION,
+    TOKEN_DIVISION,
+    TOKEN_MULTIPLICATION,
+
+    // Keywords
     TOKEN_FN,
     TOKEN_IF,
     TOKEN_FOR,
@@ -31,6 +42,7 @@ enum _token_type {
     TOKEN_CONST,
     TOKEN_RETURN,
     TOKEN_CONTINUE,
+
     // For control
     TOKEN_EOF,
     TOKEN_MAX,

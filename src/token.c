@@ -23,7 +23,7 @@ Token* createToken(char* value, int length, unsigned int line, unsigned int colu
 
 int checkKeyword(Token* token) {
 
-    assert(TOKEN_MAX == 29 && "checkKeyword() must handle all keywords");
+    assert(TOKEN_MAX == 33 && "checkKeyword() must handle all keywords");
 
     switch (token->length) {
 
@@ -64,7 +64,7 @@ int checkKeyword(Token* token) {
 
 char* tokenTypeToString(int token_type) {
 
-    assert(TOKEN_MAX == 29 && "tokenTypeToString() must handle all token types");
+    assert(TOKEN_MAX == 33 && "tokenTypeToString() must handle all token types");
 
     switch (token_type) {
 
@@ -86,6 +86,10 @@ char* tokenTypeToString(int token_type) {
         case TOKEN_SEMI             : return "TOKEN_SEMI";
         case TOKEN_LESSTHAN         : return "TOKEN_LESSTHAN";
         case TOKEN_GREATERTHAN      : return "TOKEN_GREATERTHAN";
+        case TOKEN_ADDITION         : return "TOKEN_ADDITION";
+        case TOKEN_SUBTRACTION      : return "TOKEN_SUBTRACTION";
+        case TOKEN_DIVISION         : return "TOKEN_DIVISION";
+        case TOKEN_MULTIPLICATION   : return "TOKEN_MULTIPLICATION";
         case TOKEN_DATATYPE         : return "TOKEN_DATATYPE";
         case TOKEN_FN               : return "TOKEN_FN";
         case TOKEN_IF               : return "TOKEN_IF";

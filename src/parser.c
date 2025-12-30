@@ -88,11 +88,11 @@ AST* parseIntLiteral(Parser* parser) {
     AST* ast = createAST(AST_INT_LITERAL);
 
     ast->literal_value = parser->token->value;
+    ast->name = parser->token->value;
     ast->line = parser->lexer->line;
     ast->data_type = TYPE_i32; // Default int value
 
     parserEat(parser, TOKEN_INT_LITERAL);
-    parserEat(parser, TOKEN_SEMI);
 
     return ast;
 }
@@ -102,11 +102,11 @@ AST* parseFloatLiteral(Parser* parser) {
     AST* ast = createAST(AST_FLOAT_LITERAL);
 
     ast->literal_value = parser->token->value;
+    ast->name = parser->token->value;
     ast->line = parser->lexer->line;
     ast->data_type = TYPE_FLOAT; // Default float type
 
     parserEat(parser, TOKEN_FLOAT_LITERAL);
-    parserEat(parser, TOKEN_SEMI);
 
     return ast;
 }
@@ -116,11 +116,11 @@ AST* parseCharLiteral(Parser* parser) {
     AST* ast = createAST(AST_CHAR_LITERAL);
 
     ast->literal_value = parser->token->value;
+    ast->name = parser->token->value;
     ast->line = parser->lexer->line;
     ast->data_type = TYPE_i8; // Default char type
 
     parserEat(parser, TOKEN_CHAR_LITERAL);
-    parserEat(parser, TOKEN_SEMI);
 
     return ast;
 }
@@ -147,7 +147,6 @@ AST* parseVar(Parser* parser) {
     ast->line = parser->token->line;
 
     parserEat(parser, TOKEN_ID);
-    parserEat(parser, TOKEN_SEMI);
 
     return ast;
 }
@@ -157,27 +156,121 @@ AST* parseParenthesis(Parser* parser) {
     return NULL;
 }
 
-AST* parseRHS(Parser* parser) {
+AST* parseBinaryOp(Parser* parser, int op_type) {
 
-    assert(TOKEN_MAX == 29 && "parseRHS() must handle all token types");
+    AST* ast = createAST(AST_BIOP);
+
+    ast->name = parser->token->value;
+    ast->line = parser->token->line;
+
+    if (op_type == TOKEN_ADDITION || op_type == TOKEN_SUBTRACTION) {
+        ast->precedence_value = 1;
+    }
+
+    else if (op_type == TOKEN_DIVISION || op_type == TOKEN_MULTIPLICATION) {
+        ast->precedence_value = 2;
+    }
+
+    else {
+        printf("ERROR_PLACEHOLDER\n");
+        exit(ERROR_PLACEHOLDER);
+        return NULL;
+    }
+
+    parserEat(parser, op_type);
+
+    return ast;
+}
+
+AST* parseTerm(Parser* parser) {
+
+    /*
+        Precedence Value cheat sheet: (Higher is delt with first)
+        + = 1
+        - = 1
+        / = 2
+        * = 2
+    */
+
+    assert(TOKEN_MAX == 33 && "parseRHS() must handle all token types");
+
+    AST* term_left;
 
     switch (parser->token->type) {
 
-        case TOKEN_INT_LITERAL      : return parseIntLiteral(parser);
-        case TOKEN_FLOAT_LITERAL    : return parseFloatLiteral(parser);
-        case TOKEN_CHAR_LITERAL     : return parseCharLiteral(parser);
-        case TOKEN_STRING_LITERAL   : return parseStringLiteral(parser);
-        case TOKEN_ID               : return parseVar(parser);
+        //case TOKEN_STRING_LITERAL   : return parseStringLiteral(parser);
+
+        case TOKEN_INT_LITERAL      : term_left = parseIntLiteral(parser);    break;
+        case TOKEN_FLOAT_LITERAL    : term_left = parseFloatLiteral(parser);  break;
+        case TOKEN_CHAR_LITERAL     : term_left = parseCharLiteral(parser);   break;
+        case TOKEN_ID               : term_left = parseVar(parser);           break;
+
         case TOKEN_LPAREN           : return parseParenthesis(parser);
 
         default:
-            break;
+            // TODO: make this error message better
+            printf("[Parser]: Expression at %d:%d not supported in the RHS\n", parser->token->line, parser->token->column);
+            exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+            return NULL;
     }
 
-    printf("[Parser]: Expression at %d:%d not supported in the RHS\n", parser->token->line, parser->token->column);
-    exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+    AST* operator;
 
-    return NULL;
+    switch (parser->token->type) {
+
+        case TOKEN_SEMI:
+            parserEat(parser, TOKEN_SEMI);
+            return term_left;
+
+        case TOKEN_ADDITION         : operator = parseBinaryOp(parser, TOKEN_ADDITION);         break;
+        case TOKEN_SUBTRACTION      : operator = parseBinaryOp(parser, TOKEN_SUBTRACTION);      break;
+        case TOKEN_DIVISION         : operator = parseBinaryOp(parser, TOKEN_DIVISION);         break;
+        case TOKEN_MULTIPLICATION   : operator = parseBinaryOp(parser, TOKEN_MULTIPLICATION);   break;
+
+        default:
+            printf("[Parser]: Expected ';' but recieved %s at %d:%d\n",
+                tokenTypeToString(parser->token->type),
+                parser->token->line,
+                parser->token->column
+            );
+            exit(ERROR_EXPRESSION_NOT_SUPPORTED);
+            return NULL;
+    }
+
+    AST* term_right = parseTerm(parser);
+
+    operator->left = term_left;
+    operator->right = term_right;
+
+    if (operator->precedence_value >= term_right->precedence_value) {
+
+        AST* lesser_op = term_right;
+        operator->right = lesser_op->left;
+        lesser_op->left = operator;
+
+        return lesser_op;
+    }
+
+    return operator;
+}
+
+// TODO: Finish this
+AST* parseRHS(Parser* parser) {
+
+    switch (parser->token->type) {
+
+        case TOKEN_INT_LITERAL      : break;
+        case TOKEN_FLOAT_LITERAL    : break;
+        case TOKEN_CHAR_LITERAL     : break;
+        case TOKEN_ID               : break;
+
+        default: 
+            printf("ERROR_PLACEHOLDER\n");
+            exit(ERROR_PLACEHOLDER);
+            return NULL;
+    }
+
+    return parseTerm(parser);
 }
 
 AST* parseDataType(Parser* parser) {
@@ -244,7 +337,7 @@ AST* parseReturn(Parser* parser) {
 
 AST* parseLHS(Parser* parser) {
 
-    assert(TOKEN_MAX == 29 && "parseLHS() must handle all token types");
+    assert(TOKEN_MAX == 33 && "parseLHS() must handle all token types");
 
     switch (parser->token->type) {
 

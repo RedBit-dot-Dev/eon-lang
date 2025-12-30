@@ -59,70 +59,229 @@ void writeVarDefinition(AST* ast, FILE* file, int tab_count) {
     return;
 }
 
+// TODO: find a way to not default to i32
+int writeArithmetic(AST* ast, FILE* file, int tab_count) {
+
+    int left;
+    int right;
+
+    switch (ast->name[0]) {
+
+        case '+':
+            left = writeArithmetic(ast->left, file, tab_count);
+            right = writeArithmetic(ast->right, file, tab_count);
+
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "%%%d = add i32 ", global_counter++);
+
+            if (left == -1) {
+                fprintf(file, "%d, ", atoi(ast->left->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d, ", left);
+            }
+
+            if (right == -1) {
+                fprintf(file, "%d\n", atoi(ast->right->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d\n", right);
+            }
+
+            return global_counter - 1;
+
+        case '-':
+            left = writeArithmetic(ast->left, file, tab_count);
+            right = writeArithmetic(ast->right, file, tab_count);
+
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "%%%d = sub i32 ", global_counter++);
+
+            if (left == -1) {
+                fprintf(file, "%d, ", atoi(ast->left->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d, ", left);
+            }
+
+            if (right == -1) {
+                fprintf(file, "%d\n", atoi(ast->right->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d\n", right);
+            }
+
+            return global_counter - 1;
+
+        // TODO: add unsigned op
+        case '/':
+            left = writeArithmetic(ast->left, file, tab_count);
+            right = writeArithmetic(ast->right, file, tab_count);
+
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "%%%d = sdiv i32 ", global_counter++);
+
+            if (left == -1) {
+                fprintf(file, "%d, ", atoi(ast->left->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d, ", left);
+            }
+
+            if (right == -1) {
+                fprintf(file, "%d\n", atoi(ast->right->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d\n", right);
+            }
+
+            return global_counter - 1;
+
+        case '*':
+            left = writeArithmetic(ast->left, file, tab_count);
+            right = writeArithmetic(ast->right, file, tab_count);
+
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "%%%d = mul i32 ", global_counter++);
+
+            if (left == -1) {
+                fprintf(file, "%d, ", atoi(ast->left->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d, ", left);
+            }
+
+            if (right == -1) {
+                fprintf(file, "%d\n", atoi(ast->right->literal_value));
+            }
+
+            else {
+                fprintf(file, "%%%d\n", right);
+            }
+
+            return global_counter - 1;
+
+        default:
+
+            if (ast->ast_type == AST_VARIABLE) {
+                INSERT_TABS(tab_count, file);
+                if (isVarGlobal(ast->scope, ast->name)) {
+    
+                    fprintf(file, "%%%d = load %s, %s* @%s, align %d\n",
+                        global_counter++,
+                        dataTypeToString(ast->data_type),
+                        dataTypeToString(ast->data_type),
+                        ast->ast_value->name,
+                        getAlignSize(ast->data_type)
+                    );
+    
+                }
+    
+                else {
+    
+                    fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
+                        global_counter++,
+                        dataTypeToString(ast->data_type),
+                        dataTypeToString(ast->data_type),
+                        ast->ast_value->name,
+                        getAlignSize(ast->data_type)
+                    );
+    
+                }
+                return global_counter - 1;
+            }
+            
+            else break;
+    }
+
+    return -1;
+}
+
 void writeAssignment(AST* ast, FILE* file, int tab_count) {
 
     char* data_type_string = dataTypeToString(ast->ast_value->data_type);
     int align_size = getAlignSize(ast->ast_value->data_type);
 
-    // Only occurs if initialized with another variable
-    if (ast->ast_value->ast_type == AST_VARIABLE) {
+    switch (ast->ast_value->ast_type) {
 
-        INSERT_TABS(tab_count, file);
+        case AST_BIOP:
+            int temp = writeArithmetic(ast->ast_value, file, tab_count);
 
-        if (isVarGlobal(ast->scope, ast->ast_value->name)) {
-
-            fprintf(file, "%%%d = load %s, %s* @%s, align %d\n",
-                global_counter,
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "store %s %%%d, %s* %%%s\n",
                 data_type_string,
+                temp,
                 data_type_string,
-                ast->ast_value->name,
-                align_size
+                ast->name
             );
 
-        }
+            break;
 
-        else {
 
-            fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
-                global_counter,
+        case AST_VARIABLE:
+
+            INSERT_TABS(tab_count, file);
+
+            if (isVarGlobal(ast->scope, ast->ast_value->name)) {
+
+                fprintf(file, "%%%d = load %s, %s* @%s, align %d\n",
+                    global_counter,
+                    data_type_string,
+                    data_type_string,
+                    ast->ast_value->name,
+                    align_size
+                );
+
+            }
+
+            else {
+
+                fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
+                    global_counter,
+                    data_type_string,
+                    data_type_string,
+                    ast->ast_value->name,
+                    align_size
+                );
+
+            }
+
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "store %s %%%d, %s* %%%s\n",
                 data_type_string,
+                global_counter++,
                 data_type_string,
-                ast->ast_value->name,
-                align_size
+                ast->name
             );
 
-        }
+            break;
 
-        INSERT_TABS(tab_count, file);
-        fprintf(file, "store %s %%%d, %s* %%%s\n",
-            data_type_string,
-            global_counter++,
-            data_type_string,
-            ast->name
-        );
+        case AST_CHAR_LITERAL:
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "store %s %d, %s* %%%s\n",
+                data_type_string,
+                ast->ast_value->literal_value[0],
+                data_type_string,
+                ast->name
+            );
+            break;
 
-    }
-
-    else if (ast->ast_value->ast_type == AST_CHAR_LITERAL) {
-
-        INSERT_TABS(tab_count, file);
-        fprintf(file, "store %s %d, %s* %%%s\n",
-            data_type_string,
-            ast->ast_value->literal_value[0],
-            data_type_string,
-            ast->name
-        );
-    }
-
-    else {
-
-        INSERT_TABS(tab_count, file);
-        fprintf(file, "store %s %s, %s* %%%s\n",
-            data_type_string,
-            ast->ast_value->literal_value,
-            data_type_string,
-            ast->name
-        );
+        default:
+            INSERT_TABS(tab_count, file);
+            fprintf(file, "store %s %s, %s* %%%s\n",
+                data_type_string,
+                ast->ast_value->literal_value,
+                data_type_string,
+                ast->name
+            );
+            break;
 
     }
 
