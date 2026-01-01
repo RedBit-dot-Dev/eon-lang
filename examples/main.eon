@@ -1,5 +1,6 @@
 fn int main() {
-    int local;
-    local = 2 + 4 * 8;
-    return local;
+    int local = 2;
+    int local2 = 3;
+    int loc = local * local2;
+    return loc;
 }

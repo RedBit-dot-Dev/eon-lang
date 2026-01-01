@@ -19,7 +19,7 @@ void analyseVarDeclaration(AST* ast) {
 }
 
 void analyseVarDefinition(AST* ast) {
-    
+
     assert(AST_MAX == 17 && TYPE_MAX == 13 && "analyseVarDefinition() must handle all AST and data types");
 
     if (searchSymbolNode(ast->scope, ast->name) != NULL) {
@@ -82,6 +82,11 @@ void analyseVarDefinition(AST* ast) {
 
             return;
 
+        case AST_BIOP:
+            ast->ast_value->scope = ast->scope;
+            analyseBinaryOp(ast->ast_value);
+            break;
+
         default:
             break;
     }
@@ -90,6 +95,38 @@ void analyseVarDefinition(AST* ast) {
     ast->ast_value->data_type = ast->data_type;
 
     insertInSymbolTable(ast->scope, ast->name, ast->data_type, SYMBOL_VAR, ast->line, -1, ast->ast_value->literal_value);
+
+    return;
+}
+
+void analyseBinaryOp(AST* ast) {
+
+    assert(AST_MAX == 17 && TYPE_MAX == 13 && TOKEN_MAX == 33 && "analyseAssignment() must handle all AST, data and token types");
+
+    if (ast->left) {
+        ast->left->scope = ast->scope;
+        analyseBinaryOp(ast->left);
+    }
+
+    if (ast->right) {
+        ast->right->scope = ast->scope;
+        analyseBinaryOp(ast->right);
+    }
+
+    if (ast->ast_type == AST_VARIABLE) {
+
+        Symbol_Node* var = searchSymbolNode(ast->scope, ast->name);
+
+        if (var == NULL) {
+            printf("Variable '%s' not defined at line %d\n", ast->name, ast->line);
+            exit(ERROR_VAR_NOT_DEFINED);
+        }
+
+        ast->data_type = var->data_type;
+
+        var->line_usage = ast->line;
+
+    }
 
     return;
 }
@@ -161,6 +198,11 @@ void analyseAssignment(AST* ast) {
             // This is here so that all mentions of the variable also know it's data type, otherwise it's unknown at write time
             ast->ast_value->data_type = var_rhs->data_type;
 
+            return;
+
+        case AST_BIOP:
+            ast->ast_value->scope = ast->scope;
+            analyseBinaryOp(ast->ast_value);
             return;
 
         default:
@@ -298,14 +340,14 @@ void analyseFunctionDefinition(AST* ast) {
     if (ast->args_params != NULL) {
         AST** params = (AST**) ast->args_params->items;
         for (int i = 0; i < ast->args_params->used; i++) {
-    
+
             params[i]->scope = function_body_scope;
-            
+
             if (searchScope(function_body_scope, params[i]->name) != NULL) {
                 printf("Redeclaration of parameter '%s' at line %d\n", ast->name, ast->line);
                 exit(ERROR_PARAMETER_REDECLARATION);
             }
-    
+
             insertInSymbolTable(function_body_scope, params[i]->name, params[i]->data_type, SYMBOL_PARAMETER, params[i]->line, -1, NULL);
     
         }

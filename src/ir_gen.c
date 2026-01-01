@@ -173,31 +173,31 @@ int writeArithmetic(AST* ast, FILE* file, int tab_count) {
             if (ast->ast_type == AST_VARIABLE) {
                 INSERT_TABS(tab_count, file);
                 if (isVarGlobal(ast->scope, ast->name)) {
-    
+
                     fprintf(file, "%%%d = load %s, %s* @%s, align %d\n",
                         global_counter++,
                         dataTypeToString(ast->data_type),
                         dataTypeToString(ast->data_type),
-                        ast->ast_value->name,
+                        ast->name,
                         getAlignSize(ast->data_type)
                     );
     
                 }
-    
+
                 else {
     
                     fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
                         global_counter++,
                         dataTypeToString(ast->data_type),
                         dataTypeToString(ast->data_type),
-                        ast->ast_value->name,
+                        ast->name,
                         getAlignSize(ast->data_type)
                     );
     
                 }
                 return global_counter - 1;
             }
-            
+
             else break;
     }
 

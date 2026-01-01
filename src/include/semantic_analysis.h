@@ -15,6 +15,8 @@
 
 //void analyseExpression(AST* ast);
 
+void analyseBinaryOp(AST* ast);
+
 void analyseVarDeclaration(AST* ast);
 
 void analyseVarDefinition(AST* ast);
