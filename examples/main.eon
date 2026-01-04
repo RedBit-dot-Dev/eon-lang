@@ -2,5 +2,5 @@ fn int main() {
     int local = 2;
     int local2 = 3;
     int loc = local * local2;
-    return loc;
+    return loc * 2 * 7;
 }

@@ -291,9 +291,9 @@ void writeAssignment(AST* ast, FILE* file, int tab_count) {
 void writeReturn(AST* ast, FILE* file, int tab_count) {
 
     char* data_type_string = dataTypeToString(ast->ast_value->data_type);
-    int align_size = getAlignSize(ast->ast_value->data_type);
+    //int align_size = getAlignSize(ast->ast_value->data_type);
 
-    if (ast->ast_value->ast_type != AST_VARIABLE) {
+    if (ast->ast_value->ast_type != AST_VARIABLE && ast->ast_value->ast_type != AST_BIOP) {
 
         if (ast->ast_value->ast_type == AST_NOOP) {
             INSERT_TABS(tab_count, file);
@@ -306,7 +306,7 @@ void writeReturn(AST* ast, FILE* file, int tab_count) {
         return;
     }
 
-    INSERT_TABS(tab_count, file);
+    /* INSERT_TABS(tab_count, file);
     fprintf(file, "%%%d = load %s, %s* %%%s, align %d\n",
         global_counter,
         data_type_string,
@@ -316,7 +316,12 @@ void writeReturn(AST* ast, FILE* file, int tab_count) {
     );
 
     INSERT_TABS(tab_count, file);
-    fprintf(file, "ret %s %%%d\n", data_type_string, global_counter++);
+    fprintf(file, "ret %s %%%d\n", data_type_string, global_counter++); */
+
+    int temp = writeArithmetic(ast->ast_value, file, tab_count);
+
+    INSERT_TABS(tab_count, file);
+    fprintf(file, "ret %s %%%d\n", data_type_string, temp);
 
     return;
 }

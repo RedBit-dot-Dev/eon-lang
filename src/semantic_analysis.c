@@ -298,6 +298,7 @@ void analyseReturn(AST* ast, AST* function_ast) {
             }
 
             var->line_usage = ast->line;
+            ast->ast_value->scope = ast->scope;
 
             if (var->data_type != return_data_type) {
                 printf("Return type mismatch at line %d\nFunction '%s' return type doesn't data type of variable '%s'",
@@ -308,6 +309,11 @@ void analyseReturn(AST* ast, AST* function_ast) {
                 exit(ERROR_RETURN_TYPE_MISMATCH);
             }
 
+            break;
+
+        case AST_BIOP:
+            ast->ast_value->scope = ast->scope;
+            analyseBinaryOp(ast->ast_value);
             break;
 
         default:
